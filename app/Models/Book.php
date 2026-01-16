@@ -32,12 +32,14 @@ class Book extends Model
         'book_source_id',
         'entry_date',
         'price',
+        'is_textbook',
     ];
 
     protected $casts = [
         'entry_date' => 'date',
         'stock' => 'integer',
         'price' => 'decimal:2',
+        'is_textbook' => 'boolean',
     ];
 
     public function publisher(): BelongsTo

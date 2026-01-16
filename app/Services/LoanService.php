@@ -40,8 +40,11 @@ class LoanService
         string $loanType = self::TYPE_REGULAR,
         ?Carbon $dueDate = null
     ): Loan {
-        // Validate student loan limit
-        $this->validateLoanLimit($student);
+        // Validate student loan limit only for non-textbook books
+        // Textbooks are exempt from loan limit
+        if (!$bookCopy->book->is_textbook) {
+            $this->validateLoanLimit($student);
+        }
 
         // Validate book copy availability
         $this->validateBookCopyAvailability($bookCopy);
@@ -72,6 +75,21 @@ class LoanService
     }
 
     /**
+     * Get count of active loans excluding textbooks
+     *
+     * @param Student $student
+     * @return int
+     */
+    public function getNonTextbookActiveLoansCount(Student $student): int
+    {
+        return $student->activeLoans()
+            ->whereHas('bookCopy.book', function ($query) {
+                $query->where('is_textbook', false);
+            })
+            ->count();
+    }
+
+    /**
      * Validate that student has not exceeded their loan limit
      *
      * @param Student $student
@@ -79,7 +97,7 @@ class LoanService
      */
     public function validateLoanLimit(Student $student): void
     {
-        $activeLoansCount = $student->activeLoans()->count();
+        $activeLoansCount = $this->getNonTextbookActiveLoansCount($student);
 
         if ($activeLoansCount >= $student->max_loan) {
             throw new \InvalidArgumentException(
@@ -171,7 +189,7 @@ class LoanService
      */
     public function canStudentBorrow(Student $student): bool
     {
-        return $student->activeLoans()->count() < $student->max_loan;
+        return $this->getNonTextbookActiveLoansCount($student) < $student->max_loan;
     }
 
     /**
@@ -182,7 +200,7 @@ class LoanService
      */
     public function getRemainingLoanSlots(Student $student): int
     {
-        return max(0, $student->max_loan - $student->activeLoans()->count());
+        return max(0, $student->max_loan - $this->getNonTextbookActiveLoansCount($student));
     }
 
     /**

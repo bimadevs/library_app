@@ -57,7 +57,8 @@
                         <td class="font-medium text-slate-800">{{ $class->name }}</td>
                         <td>
                             @php
-                                $romanLevel = ['X', 'XI', 'XII'][$class->level - 10] ?? $class->level;
+                                $level = (int) $class->level;
+                                $romanLevel = ['X', 'XI', 'XII'][$level - 10] ?? $class->level;
                             @endphp
                             <span class="badge badge-info">{{ $romanLevel }}</span>
                         </td>

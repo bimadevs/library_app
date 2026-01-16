@@ -8,7 +8,12 @@
         <div class="card">
             <div class="flex items-start justify-between mb-6">
                 <div>
-                    <h3 class="card-header mb-1">{{ $book->title }}</h3>
+                    <div class="flex items-center gap-2 mb-1">
+                        <h3 class="card-header mb-0">{{ $book->title }}</h3>
+                        @if($book->is_textbook)
+                            <span class="badge badge-primary">Buku Paket</span>
+                        @endif
+                    </div>
                     <p class="text-slate-500">{{ $book->author }}</p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -99,6 +104,16 @@
                     <div>
                         <label class="text-xs text-slate-500 uppercase tracking-wide">Harga</label>
                         <p class="text-slate-800">{{ $book->price ? 'Rp ' . number_format($book->price, 0, ',', '.') : '-' }}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500 uppercase tracking-wide">Jenis Buku</label>
+                        <p class="text-slate-800">
+                            @if($book->is_textbook)
+                                <span class="badge badge-primary">Buku Paket Pelajaran</span>
+                            @else
+                                <span class="badge badge-secondary">Buku Umum</span>
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>

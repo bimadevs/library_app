@@ -37,7 +37,13 @@
                 @endforeach
             </select>
 
-            @if($search || $filterClassification || $filterCategory)
+            <select wire:model.live="filterTextbook" class="form-select">
+                <option value="">Semua Buku</option>
+                <option value="1">Buku Paket</option>
+                <option value="0">Buku Umum</option>
+            </select>
+
+            @if($search || $filterClassification || $filterCategory || $filterTextbook !== '')
                 <button wire:click="resetFilters" class="btn btn-secondary text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -97,7 +103,12 @@
                         <td class="text-slate-500">{{ $books->firstItem() + $index }}</td>
                         <td class="font-mono text-sm">{{ $book->code }}</td>
                         <td class="font-medium text-slate-800">
-                            <div class="max-w-xs truncate" title="{{ $book->title }}">{{ $book->title }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="max-w-xs truncate" title="{{ $book->title }}">{{ $book->title }}</span>
+                                @if($book->is_textbook)
+                                    <span class="badge badge-primary text-xs">Paket</span>
+                                @endif
+                            </div>
                         </td>
                         <td>{{ $book->author }}</td>
                         <td>
@@ -154,7 +165,7 @@
                             <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                             </svg>
-                            @if($search || $filterClassification || $filterCategory)
+                            @if($search || $filterClassification || $filterCategory || $filterTextbook !== '')
                                 Tidak ada buku yang cocok dengan filter
                             @else
                                 Belum ada data buku

@@ -288,6 +288,25 @@
                     @enderror
                 </div>
 
+                <!-- Textbook Flag -->
+                <div class="md:col-span-3">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" 
+                               name="is_textbook" 
+                               id="is_textbook"
+                               value="1"
+                               class="form-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 @error('is_textbook') border-red-500 @enderror"
+                               {{ old('is_textbook', $book->is_textbook ?? false) ? 'checked' : '' }}>
+                        <span class="form-label mb-0">Buku Paket Pelajaran</span>
+                    </label>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Centang jika buku ini adalah buku paket pelajaran. Peminjaman buku paket tidak dihitung dalam batas peminjaman siswa.
+                    </p>
+                    @error('is_textbook')
+                        <p class="form-error">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Description -->
                 <div class="md:col-span-3">
                     <label for="description" class="form-label">Deskripsi</label>

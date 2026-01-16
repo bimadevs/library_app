@@ -50,6 +50,7 @@ class BookController extends Controller
             'book_source_id' => 'required|exists:book_sources,id',
             'entry_date' => 'required|date',
             'price' => 'nullable|numeric|min:0',
+            'is_textbook' => 'boolean',
         ]);
 
         Book::create($validated);
@@ -103,6 +104,7 @@ class BookController extends Controller
             'book_source_id' => 'required|exists:book_sources,id',
             'entry_date' => 'required|date',
             'price' => 'nullable|numeric|min:0',
+            'is_textbook' => 'boolean',
         ]);
 
         $book->update($validated);
@@ -153,13 +155,13 @@ class BookController extends Controller
             'kode_buku', 'judul', 'pengarang', 'penerbit', 'tempat_terbit', 
             'tahun_terbit', 'isbn', 'stok', 'jumlah_halaman', 'ketebalan',
             'klasifikasi_ddc', 'sub_klasifikasi', 'kategori', 'lokasi_rak',
-            'deskripsi', 'sumber', 'tanggal_masuk', 'harga'
+            'deskripsi', 'sumber', 'tanggal_masuk', 'harga', 'buku_paket'
         ];
         $example = [
             'BK001', 'Pemrograman PHP', 'John Doe', 'Gramedia', 'Jakarta',
             '2024', '978-123-456-789', '5', '250', '2 cm',
             '000', '000 - 009', 'Fiksi', 'A-01-01',
-            'Buku tentang pemrograman PHP', 'Pembelian', '2024-01-15', '150000'
+            'Buku tentang pemrograman PHP', 'Pembelian', '2024-01-15', '150000', 'Tidak'
         ];
 
         $callback = function() use ($columns, $example) {

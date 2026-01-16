@@ -18,6 +18,7 @@ class BookTable extends Component
     public int $perPage = 10;
     public string $filterClassification = '';
     public string $filterCategory = '';
+    public string $filterTextbook = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -25,6 +26,7 @@ class BookTable extends Component
         'sortDirection' => ['except' => 'asc'],
         'filterClassification' => ['except' => ''],
         'filterCategory' => ['except' => ''],
+        'filterTextbook' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -42,6 +44,11 @@ class BookTable extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterTextbook()
+    {
+        $this->resetPage();
+    }
+
     public function sortBy(string $field)
     {
         if ($this->sortField === $field) {
@@ -54,7 +61,7 @@ class BookTable extends Component
 
     public function resetFilters()
     {
-        $this->reset(['search', 'filterClassification', 'filterCategory']);
+        $this->reset(['search', 'filterClassification', 'filterCategory', 'filterTextbook']);
         $this->resetPage();
     }
 
@@ -76,6 +83,9 @@ class BookTable extends Component
             })
             ->when($this->filterCategory, function ($query) {
                 $query->where('category_id', $this->filterCategory);
+            })
+            ->when($this->filterTextbook !== '', function ($query) {
+                $query->where('is_textbook', $this->filterTextbook === '1');
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);

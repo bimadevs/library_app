@@ -134,6 +134,7 @@ class BooksImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
                     'source' => trim($row['sumber'] ?? ''),
                     'entry_date' => $this->parseDate($row['tanggal_masuk'] ?? '') ?? now()->format('Y-m-d'),
                     'price' => !empty($row['harga']) ? (float) $row['harga'] : null,
+                    'is_textbook' => $this->parseTextbookValue($row['buku_paket'] ?? ''),
                 ]);
 
                 $this->imported[] = [
@@ -177,6 +178,21 @@ class BooksImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
         }
 
         return $value;
+    }
+
+    /**
+     * Parse textbook value from import.
+     * Handles "Ya", "1", "true" as true, defaults to false otherwise.
+     */
+    protected function parseTextbookValue($value): bool
+    {
+        if (empty($value)) {
+            return false;
+        }
+
+        $normalizedValue = strtolower(trim($value));
+        
+        return in_array($normalizedValue, ['ya', '1', 'true', 'yes'], true);
     }
 
     public function rules(): array

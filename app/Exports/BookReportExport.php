@@ -78,6 +78,7 @@ class BookReportExport implements FromCollection, WithHeadings, WithMapping, Wit
             'Penerbit',
             'Tahun Terbit',
             'Kategori',
+            'Buku Paket',
             'Stok',
             'Tanggal Masuk',
         ];
@@ -102,6 +103,7 @@ class BookReportExport implements FromCollection, WithHeadings, WithMapping, Wit
             $book->publisher->name ?? '-',
             $book->publish_year,
             $book->category->name ?? '-',
+            $book->is_textbook ? 'Ya' : 'Tidak',
             $book->stock,
             $book->entry_date?->format('d/m/Y') ?? '-',
         ];
