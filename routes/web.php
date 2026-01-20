@@ -15,6 +15,7 @@ use App\Http\Controllers\Master\SubClassificationController;
 use App\Http\Controllers\Master\BookSourceController;
 use App\Http\Controllers\Report\LoanReportController;
 use App\Http\Controllers\Report\FineReportController;
+use App\Http\Controllers\FineController;
 use App\Http\Controllers\Report\BookReportController;
 use App\Http\Controllers\Report\VisitorReportController;
 use App\Livewire\Visitor\CheckIn;
@@ -90,6 +91,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/loans/create', fn() => view('transactions.loans.create'))->name('loans.create');
         Route::get('/returns/create', fn() => view('transactions.returns.create'))->name('returns.create');
     });
+
+    // Pay Fine Route
+    Route::post('/fines/{fine}/pay', [FineController::class, 'markAsPaid'])->name('fines.pay');
 
     // Report Routes
     Route::prefix('reports')->name('reports.')->group(function () {

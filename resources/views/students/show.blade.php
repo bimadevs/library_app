@@ -156,11 +156,21 @@
                                     </td>
                                     <td class="font-medium">Rp {{ number_format($fine->amount, 0, ',', '.') }}</td>
                                     <td>
-                                        @if($fine->type === 'late')
-                                            Terlambat {{ $fine->days_overdue }} hari
-                                        @else
-                                            Kompensasi buku hilang
-                                        @endif
+                                        <div class="flex items-center justify-between">
+                                            <span>
+                                                @if($fine->type === 'late')
+                                                    Terlambat {{ $fine->days_overdue }} hari
+                                                @else
+                                                    Kompensasi buku hilang
+                                                @endif
+                                            </span>
+                                            <form action="{{ route('fines.pay', $fine) }}" method="POST" onsubmit="return confirm('Konfirmasi pembayaran denda sebesar Rp {{ number_format($fine->amount, 0, ',', '.') }}?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    Bayar
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

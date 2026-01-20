@@ -46,6 +46,14 @@ class LoanService
             $this->validateLoanLimit($student);
         }
 
+        // Validate unpaid fines
+        if ($this->hasUnpaidFines($student)) {
+            $amount = number_format($this->getUnpaidFinesAmount($student), 0, ',', '.');
+            throw new \InvalidArgumentException(
+                "Siswa memiliki tunggakan denda sebesar Rp {$amount}. Harap lunasi denda terlebih dahulu sebelum meminjam buku baru."
+            );
+        }
+
         // Validate book copy availability
         $this->validateBookCopyAvailability($bookCopy);
 

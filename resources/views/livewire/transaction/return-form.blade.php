@@ -169,9 +169,20 @@
                                         <!-- Fine & Lost Toggle -->
                                         <div class="text-right">
                                             @if($book['fine_amount'] > 0 && !in_array($book['loan_id'], $lostBooks))
-                                                <p class="text-red-600 font-medium">
-                                                    Denda: Rp {{ number_format($book['fine_amount'], 0, ',', '.') }}
-                                                </p>
+                                                <div class="flex flex-col items-end gap-1">
+                                                    <p class="text-red-600 font-medium">
+                                                        Denda: Rp {{ number_format($book['fine_amount'], 0, ',', '.') }}
+                                                    </p>
+                                                    @if(in_array($book['loan_id'], $selectedLoans))
+                                                        <label class="flex items-center gap-2 cursor-pointer bg-red-50 px-2 py-1 rounded border border-red-100">
+                                                            <input type="checkbox" 
+                                                                   wire:click="togglePaidFine({{ $book['loan_id'] }})"
+                                                                   {{ in_array($book['loan_id'], $paidFines) ? 'checked' : '' }}
+                                                                   class="w-4 h-4 rounded border-red-300 text-red-600 focus:ring-red-500">
+                                                            <span class="text-xs text-red-700 font-medium">Bayar Sekarang</span>
+                                                        </label>
+                                                    @endif
+                                                </div>
                                             @endif
                                             
                                             @if(in_array($book['loan_id'], $selectedLoans))
@@ -183,6 +194,24 @@
                                                     <span class="text-sm text-red-600">Buku Hilang</span>
                                                 </label>
                                             @endif
+
+                                            @if(in_array($book['loan_id'], $lostBooks) && in_array($book['loan_id'], $selectedLoans))
+                                                <div class="mt-2 flex flex-col items-end gap-1 animate-fade-in-up">
+                                                    @php
+                                                        // We need to calculate lost book fine here or fetch it from component
+                                                        // Since we don't have direct access to calculation logic in blade easily,
+                                                        // we rely on the component to update total.
+                                                        // But we want to show Pay Now checkbox.
+                                                    @endphp
+                                                    <label class="flex items-center gap-2 cursor-pointer bg-red-50 px-2 py-1 rounded border border-red-100">
+                                                        <input type="checkbox" 
+                                                               wire:click="togglePaidFine({{ $book['loan_id'] }})"
+                                                               {{ in_array($book['loan_id'], $paidFines) ? 'checked' : '' }}
+                                                               class="w-4 h-4 rounded border-red-300 text-red-600 focus:ring-red-500">
+                                                        <span class="text-xs text-red-700 font-medium">Bayar Ganti Rugi</span>
+                                                    </label>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -192,45 +221,125 @@
                 </div>
             </div>
 
-            <!-- Summary & Submit -->
+            <!-- Summary & Payment (POS Style) -->
             @if(count($borrowedBooks) > 0)
                 <div class="card">
-                    <div class="card-body">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-slate-600">
-                                    Buku dipilih: <span class="font-semibold">{{ count($selectedLoans) }}</span>
-                                </p>
-                                @if($totalFine > 0)
-                                    <p class="text-lg font-semibold text-red-600">
-                                        Total Denda: Rp {{ number_format($totalFine, 0, ',', '.') }}
-                                    </p>
-                                @endif
+                    <div class="card-header border-b pb-3 mb-4">
+                        <h3 class="card-title">Rincian & Pembayaran</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Left: Summary Details -->
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center text-slate-600">
+                                <span>Buku Dipilih</span>
+                                <span class="font-semibold">{{ count($selectedLoans) }} Buku</span>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <button type="button" wire:click="resetForm" class="btn btn-secondary">
-                                    Reset Form
-                                </button>
-                                <button type="submit" 
-                                        class="btn btn-primary" 
-                                        wire:loading.attr="disabled"
-                                        {{ count($selectedLoans) === 0 ? 'disabled' : '' }}>
-                                    <span wire:loading.remove wire:target="submit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                        Proses Pengembalian
+                            
+                            @if($this->getTotalPayableProperty() > 0)
+                                <div class="flex justify-between items-center text-red-600">
+                                    <span>Total Denda (Dibayar Sekarang)</span>
+                                    <span class="font-bold">Rp {{ number_format($this->getTotalPayableProperty(), 0, ',', '.') }}</span>
+                                </div>
+                            @else
+                                <div class="flex justify-between items-center text-slate-500">
+                                    <span>Total Tagihan</span>
+                                    <span class="font-bold">Rp 0</span>
+                                </div>
+                            @endif
+
+                            @if($this->totalFine - $this->getTotalPayableProperty() > 0)
+                                <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 text-sm text-amber-800 flex items-start gap-2">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <span>
+                                        Sisa denda sebesar <strong>Rp {{ number_format($this->totalFine - $this->getTotalPayableProperty(), 0, ',', '.') }}</strong> akan dicatat sebagai hutang siswa.
                                     </span>
-                                    <span wire:loading wire:target="submit">
-                                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Memproses...
-                                    </span>
-                                </button>
-                            </div>
+                                </div>
+                            @endif
                         </div>
+
+                        <!-- Right: Payment Calculator -->
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                            @if($this->getTotalPayableProperty() > 0)
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Total Harus Dibayar</label>
+                                        <div class="text-3xl font-bold text-slate-800">
+                                            Rp {{ number_format($this->getTotalPayableProperty(), 0, ',', '.') }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Uang Tunai (Cash)</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-slate-500 font-bold">Rp</span>
+                                            </div>
+                                            <input type="number" 
+                                                   wire:model.live="cashAmount" 
+                                                   class="form-input pl-10 text-lg font-mono" 
+                                                   placeholder="0"
+                                                   min="0">
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 border-t border-slate-200">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-medium text-slate-600">Kembalian</span>
+                                            @php
+                                                $cash = is_numeric($cashAmount) ? (float) $cashAmount : 0;
+                                                $change = $cash - $this->getTotalPayableProperty();
+                                            @endphp
+                                            <span class="text-xl font-bold {{ $change < 0 ? 'text-red-600' : 'text-emerald-600' }}">
+                                                Rp {{ number_format(max(0, $change), 0, ',', '.') }}
+                                            </span>
+                                        </div>
+                                        @if($cash > 0 && $cash < $this->getTotalPayableProperty())
+                                            <p class="text-xs text-red-500 mt-1 text-right">Uang pembayaran kurang!</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @else
+                                <div class="h-full flex flex-col items-center justify-center text-slate-400 py-4">
+                                    <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p class="font-medium">Tidak ada pembayaran diperlukan</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex items-center justify-between border-t pt-6">
+                        <button type="button" wire:click="resetForm" class="btn btn-secondary">
+                            Batalkan
+                        </button>
+                        
+                        <button type="submit" 
+                                class="btn btn-primary px-8 py-3 text-lg shadow-lg shadow-emerald-500/30" 
+                                wire:loading.attr="disabled"
+                                {{ count($selectedLoans) === 0 || ($this->getTotalPayableProperty() > 0 && (is_numeric($cashAmount) ? (float) $cashAmount : 0) < $this->getTotalPayableProperty()) ? 'disabled' : '' }}
+                                onclick="return confirm('Proses pengembalian buku? Pastikan data sudah benar.')">
+
+                            <span wire:loading.remove wire:target="submit">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>Proses Transaksi</span>
+                                </div>
+                            </span>
+                            <span wire:loading wire:target="submit">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Memproses...
+                                </div>
+                            </span>
+                        </button>
                     </div>
                 </div>
             @endif

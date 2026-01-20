@@ -75,6 +75,10 @@
         @apply bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500;
     }
     
+    .btn-success {
+        @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+    }
+    
     .btn-sm {
         @apply px-3 py-1.5 text-sm;
     }

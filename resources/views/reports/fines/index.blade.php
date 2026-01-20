@@ -100,8 +100,9 @@
                             <th>Tipe</th>
                             <th>Hari Terlambat</th>
                             <th>Jumlah</th>
-                            <th>Status</th>
-                            <th>Tanggal</th>
+                            <th>Status Pembayaran</th>
+                            <th>Tanggal Denda</th>
+                            <th>Tanggal Bayar</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -122,12 +123,21 @@
                                 <td class="font-semibold">Rp {{ number_format($fine->amount, 0, ',', '.') }}</td>
                                 <td>
                                     @if($fine->is_paid)
-                                        <span class="badge badge-green">Lunas</span>
+                                        <span class="badge badge-success">Lunas</span>
                                     @else
-                                        <span class="badge badge-red">Belum Lunas</span>
+                                        <span class="badge badge-danger">Belum Lunas</span>
                                     @endif
                                 </td>
                                 <td>{{ $fine->created_at?->format('d/m/Y') }}</td>
+                                <td>
+                                    @if($fine->is_paid && $fine->paid_at)
+                                        {{ \Carbon\Carbon::parse($fine->paid_at)->format('d/m/Y H:i') }}
+                                    @elseif($fine->is_paid)
+                                        <span class="text-slate-400 text-xs italic">(Manual)</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>

@@ -51,7 +51,7 @@ class FineReportExport implements FromCollection, WithHeadings, WithMapping, Wit
             'Tipe Denda',
             'Hari Terlambat',
             'Jumlah (Rp)',
-            'Status Bayar',
+            'Status Pembayaran',
             'Tanggal Bayar',
             'Tanggal Dibuat',
         ];
@@ -76,7 +76,7 @@ class FineReportExport implements FromCollection, WithHeadings, WithMapping, Wit
             $fine->days_overdue ?? 0,
             number_format($fine->amount, 0, ',', '.'),
             $fine->is_paid ? 'Lunas' : 'Belum Lunas',
-            $fine->paid_at?->format('d/m/Y H:i') ?? '-',
+            $fine->paid_at ? \Carbon\Carbon::parse($fine->paid_at)->format('d/m/Y H:i') : '-',
             $fine->created_at?->format('d/m/Y H:i'),
         ];
     }

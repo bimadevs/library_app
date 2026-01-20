@@ -24,14 +24,15 @@ class ReturnService
      *
      * @param Loan $loan
      * @param bool $isLost Whether the book is marked as lost
+     * @param bool $isPaid Whether the fine is paid immediately
      * @param Carbon|null $returnDate The actual return date (defaults to today)
      * @return array{loan: Loan, fine: Fine|null}
      */
-    public function processReturn(Loan $loan, bool $isLost = false, ?Carbon $returnDate = null): array
+    public function processReturn(Loan $loan, bool $isLost = false, bool $isPaid = false, ?Carbon $returnDate = null): array
     {
         $returnDate = $returnDate ?? Carbon::today();
 
-        return DB::transaction(function () use ($loan, $isLost, $returnDate) {
+        return DB::transaction(function () use ($loan, $isLost, $isPaid, $returnDate) {
             // Calculate fine if applicable
             $fineData = $this->fineCalculator->calculateFine($loan, $isLost, $returnDate);
             $fine = null;
@@ -56,7 +57,8 @@ class ReturnService
                     'type' => $fineData['type'],
                     'amount' => $fineData['amount'],
                     'days_overdue' => $fineData['days_overdue'],
-                    'is_paid' => false,
+                    'is_paid' => $isPaid,
+                    'paid_at' => $isPaid ? now() : null,
                 ]);
             }
 
@@ -70,7 +72,7 @@ class ReturnService
     /**
      * Process multiple book returns at once
      *
-     * @param array $returns Array of ['loan_id' => int, 'is_lost' => bool]
+     * @param array $returns Array of ['loan_id' => int, 'is_lost' => bool, 'is_paid' => bool]
      * @param Carbon|null $returnDate The actual return date
      * @return Collection
      */
@@ -85,6 +87,7 @@ class ReturnService
                 $result = $this->processReturn(
                     $loan,
                     $returnData['is_lost'] ?? false,
+                    $returnData['is_paid'] ?? false,
                     $returnDate
                 );
                 $results->push($result);

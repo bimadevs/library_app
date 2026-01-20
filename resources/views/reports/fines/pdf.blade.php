@@ -139,8 +139,9 @@
                 <th>Tipe</th>
                 <th>Hari</th>
                 <th>Jumlah</th>
-                <th>Status</th>
-                <th>Tanggal</th>
+                <th>Status Pembayaran</th>
+                <th>Tanggal Bayar</th>
+                <th>Tanggal Denda</th>
             </tr>
         </thead>
         <tbody>
@@ -164,6 +165,13 @@
                             <span class="status-paid">Lunas</span>
                         @else
                             <span class="status-unpaid">Belum Lunas</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($fine->is_paid && $fine->paid_at)
+                            {{ \Carbon\Carbon::parse($fine->paid_at)->format('d/m/Y H:i') }}
+                        @else
+                            -
                         @endif
                     </td>
                     <td>{{ $fine->created_at?->format('d/m/Y') }}</td>
