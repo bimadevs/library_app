@@ -11,13 +11,13 @@ class ClassTable extends Component
     use WithPagination;
 
     public string $search = '';
-    public string $sortField = 'level';
+    public string $sortField = 'name';
     public string $sortDirection = 'asc';
     public int $perPage = 10;
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'sortField' => ['except' => 'level'],
+        'sortField' => ['except' => 'name'],
         'sortDirection' => ['except' => 'asc'],
     ];
 

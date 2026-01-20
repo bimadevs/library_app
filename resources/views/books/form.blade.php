@@ -6,13 +6,42 @@
     <div class="card max-w-5xl">
         <h3 class="card-header">{{ $book->exists ? 'Edit Data Buku' : 'Tambah Buku Baru' }}</h3>
 
-        <form action="{{ $book->exists ? route('books.update', $book) : route('books.store') }}" method="POST">
+        <form action="{{ $book->exists ? route('books.update', $book) : route('books.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @if($book->exists)
                 @method('PUT')
             @endif
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Cover Image Upload -->
+                <div class="md:col-span-3 mb-4">
+                    <label class="form-label">Cover Buku</label>
+                    <div class="flex items-center gap-4">
+                        <div class="w-24 h-32 bg-slate-100 border border-slate-300 rounded overflow-hidden flex-shrink-0">
+                            @if($book->exists && $book->cover_image)
+                                <img src="{{ Storage::url($book->cover_image) }}" alt="Cover" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-slate-400">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <input type="file" 
+                                   name="cover_image" 
+                                   id="cover_image" 
+                                   class="form-input file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                                   accept="image/*">
+                            <p class="text-xs text-slate-500 mt-1">Format: JPG, PNG, GIF. Maksimal 2MB.</p>
+                            @error('cover_image')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Kode Buku -->
                 <div>
                     <label for="code" class="form-label">Kode Buku <span class="text-red-500">*</span></label>

@@ -7,7 +7,12 @@
         <!-- Student Info Card -->
         <div class="card">
             <div class="flex items-start justify-between mb-6">
-                <h3 class="card-header mb-0">Informasi Siswa</h3>
+                <div class="flex items-center gap-6">
+                    <div class="w-24 h-24 bg-slate-100 rounded-full overflow-hidden shadow-sm border border-slate-200 flex-shrink-0">
+                        <img src="{{ $student->photo_url }}" alt="Foto" class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="card-header mb-0">Informasi Siswa</h3>
+                </div>
                 <div class="flex items-center gap-2">
                     <a href="{{ route('students.edit', $student) }}" class="btn btn-primary">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

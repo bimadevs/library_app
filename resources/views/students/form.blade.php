@@ -6,13 +6,42 @@
     <div class="card max-w-4xl">
         <h3 class="card-header">{{ $student->exists ? 'Edit Data Siswa' : 'Tambah Siswa Baru' }}</h3>
 
-        <form action="{{ $student->exists ? route('students.update', $student) : route('students.store') }}" method="POST">
+        <form action="{{ $student->exists ? route('students.update', $student) : route('students.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @if($student->exists)
                 @method('PUT')
             @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Photo Upload -->
+                <div class="md:col-span-2 mb-4">
+                    <label class="form-label">Foto Siswa</label>
+                    <div class="flex items-center gap-4">
+                        <div class="w-24 h-24 bg-slate-100 rounded-full border border-slate-300 overflow-hidden flex-shrink-0">
+                            @if($student->exists && $student->photo)
+                                <img src="{{ Storage::url($student->photo) }}" alt="Foto" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-slate-400">
+                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <input type="file" 
+                                   name="photo" 
+                                   id="photo" 
+                                   class="form-input file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                                   accept="image/*">
+                            <p class="text-xs text-slate-500 mt-1">Format: JPG, PNG. Maksimal 2MB.</p>
+                            @error('photo')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
                 <!-- NIS -->
                 <div>
                     <label for="nis" class="form-label">NIS <span class="text-red-500">*</span></label>

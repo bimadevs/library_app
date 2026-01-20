@@ -60,6 +60,7 @@
             <thead>
                 <tr>
                     <th class="w-16">No</th>
+                    <th class="w-16">Cover</th>
                     <th wire:click="sortBy('code')" class="cursor-pointer hover:bg-slate-100">
                         <div class="flex items-center gap-1">
                             Kode
@@ -101,6 +102,11 @@
                 @forelse($books as $index => $book)
                     <tr>
                         <td class="text-slate-500">{{ $books->firstItem() + $index }}</td>
+                        <td class="px-2 py-2">
+                            <div class="w-10 h-14 bg-slate-100 rounded overflow-hidden shadow-sm border border-slate-200">
+                                <img src="{{ $book->cover_url }}" alt="Cover" class="w-full h-full object-cover">
+                            </div>
+                        </td>
                         <td class="font-mono text-sm">{{ $book->code }}</td>
                         <td class="font-medium text-slate-800">
                             <div class="flex items-center gap-2">
@@ -161,7 +167,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center py-8 text-slate-500">
+                        <td colspan="10" class="text-center py-8 text-slate-500">
                             <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                             </svg>

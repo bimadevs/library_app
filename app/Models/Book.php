@@ -20,6 +20,7 @@ class Book extends Model
         'publish_place',
         'publish_year',
         'isbn',
+        'cover_image',
         'stock',
         'page_count',
         'thickness',
@@ -75,5 +76,16 @@ class Book extends Model
     public function availableCopies(): HasMany
     {
         return $this->hasMany(BookCopy::class)->where('status', 'available');
+    }
+
+    public function getCoverUrlAttribute(): string
+    {
+        if ($this->cover_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->cover_image)) {
+            return \Illuminate\Support\Facades\Storage::url($this->cover_image);
+        }
+
+        // Return a placeholder service URL or a local default image
+        // Using ui-avatars as a simple fallback based on the title
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->title) . '&background=random&size=200';
     }
 }

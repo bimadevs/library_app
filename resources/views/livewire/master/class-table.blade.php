@@ -36,16 +36,6 @@
                             @endif
                         </div>
                     </th>
-                    <th wire:click="sortBy('level')" class="cursor-pointer hover:bg-slate-100">
-                        <div class="flex items-center gap-1">
-                            Tingkat
-                            @if($sortField === 'level')
-                                <svg class="w-4 h-4 {{ $sortDirection === 'asc' ? '' : 'rotate-180' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                                </svg>
-                            @endif
-                        </div>
-                    </th>
                     <th>Jumlah Siswa</th>
                     <th class="w-32 text-center">Aksi</th>
                 </tr>
@@ -55,13 +45,6 @@
                     <tr>
                         <td class="text-slate-500">{{ $classes->firstItem() + $index }}</td>
                         <td class="font-medium text-slate-800">{{ $class->name }}</td>
-                        <td>
-                            @php
-                                $level = (int) $class->level;
-                                $romanLevel = ['X', 'XI', 'XII'][$level - 10] ?? $class->level;
-                            @endphp
-                            <span class="badge badge-info">{{ $romanLevel }}</span>
-                        </td>
                         <td>{{ $class->students_count }} siswa</td>
                         <td>
                             <div class="flex items-center justify-center gap-1">
@@ -90,7 +73,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center py-8 text-slate-500">
+                        <td colspan="4" class="text-center py-8 text-slate-500">
                             <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                             </svg>

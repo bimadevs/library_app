@@ -16,6 +16,8 @@ use App\Http\Controllers\Master\BookSourceController;
 use App\Http\Controllers\Report\LoanReportController;
 use App\Http\Controllers\Report\FineReportController;
 use App\Http\Controllers\Report\BookReportController;
+use App\Http\Controllers\Report\VisitorReportController;
+use App\Livewire\Visitor\CheckIn;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,6 +29,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // Visitor Route
+    Route::get('/visitors/check-in', CheckIn::class)->name('visitors.check-in');
+
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -72,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/students-promotion', fn() => view('students.promotion'))->name('students.promotion');
 
     // Book Routes
+    Route::post('/books/print-label', [BookController::class, 'printLabel'])->name('books.print-label');
     Route::resource('books', BookController::class);
     Route::get('/books-import', fn() => view('books.import'))->name('books.import');
     Route::get('/books-import/template', [BookController::class, 'downloadTemplate'])->name('books.import.template');
@@ -87,6 +93,9 @@ Route::middleware('auth')->group(function () {
 
     // Report Routes
     Route::prefix('reports')->name('reports.')->group(function () {
+        // Visitor Reports
+        Route::get('/visitors', [VisitorReportController::class, 'index'])->name('visitors');
+
         // Loan Reports
         Route::get('/loans', [LoanReportController::class, 'index'])->name('loans');
         Route::get('/loans/export-excel', [LoanReportController::class, 'exportExcel'])->name('loans.export-excel');

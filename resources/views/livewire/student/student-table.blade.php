@@ -67,6 +67,7 @@
             <thead>
                 <tr>
                     <th class="w-16">No</th>
+                    <th class="w-16">Foto</th>
                     <th wire:click="sortBy('nis')" class="cursor-pointer hover:bg-slate-100">
                         <div class="flex items-center gap-1">
                             NIS
@@ -98,10 +99,15 @@
                 @forelse($students as $index => $student)
                     <tr>
                         <td class="text-slate-500">{{ $students->firstItem() + $index }}</td>
+                        <td class="px-2 py-2">
+                            <div class="w-10 h-10 bg-slate-100 rounded-full overflow-hidden shadow-sm border border-slate-200">
+                                <img src="{{ $student->photo_url }}" alt="Foto" class="w-full h-full object-cover">
+                            </div>
+                        </td>
                         <td class="font-mono text-sm">{{ $student->nis }}</td>
                         <td class="font-medium text-slate-800">{{ $student->name }}</td>
                         <td>{{ $student->class->name ?? '-' }}</td>
-                        <td>{{ $student->major->name ?? '-' }}</td>
+                        <td>{{ $student->major->code ?? '-' }}</td>
                         <td>
                             @if($student->active_loans_count > 0)
                                 <span class="badge badge-info">{{ $student->active_loans_count }} buku</span>
@@ -151,7 +157,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-8 text-slate-500">
+                        <td colspan="9" class="text-center py-8 text-slate-500">
                             <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>

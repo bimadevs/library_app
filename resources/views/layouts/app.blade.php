@@ -35,7 +35,12 @@
             </div>
 
             <!-- Main Content -->
-            <div class="lg:ml-64 transition-all duration-300" :class="{ 'ml-0': !sidebarOpen }">
+            <div class="transition-all duration-300 lg:ml-64" 
+                 :class="{ 
+                     'ml-0': !sidebarOpen, 
+                     'lg:ml-20': $store.sidebar.collapsed,
+                     'lg:ml-64': !$store.sidebar.collapsed
+                 }">
                 <!-- Top Navigation -->
                 <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-20">
                     <div class="flex items-center justify-between px-6 py-4">

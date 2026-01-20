@@ -24,7 +24,6 @@ class ClassController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:classes,name',
-            'level' => 'required|integer|min:1|max:12',
         ]);
 
         SchoolClass::create($validated);
@@ -45,7 +44,6 @@ class ClassController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:classes,name,' . $class->id,
-            'level' => 'required|integer|min:1|max:12',
         ]);
 
         $class->update($validated);

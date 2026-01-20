@@ -21,6 +21,7 @@ class Student extends Model
         'class_id',
         'major_id',
         'gender',
+        'photo',
         'academic_year_id',
         'phone',
         'max_loan',
@@ -66,5 +67,14 @@ class Student extends Model
     public function unpaidFines(): HasMany
     {
         return $this->hasMany(Fine::class)->where('is_paid', false);
+    }
+
+    public function getPhotoUrlAttribute(): string
+    {
+        if ($this->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->photo)) {
+            return \Illuminate\Support\Facades\Storage::url($this->photo);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random&size=200';
     }
 }

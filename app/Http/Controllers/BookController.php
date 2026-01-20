@@ -51,7 +51,12 @@ class BookController extends Controller
             'entry_date' => 'required|date',
             'price' => 'nullable|numeric|min:0',
             'is_textbook' => 'boolean',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB Max
         ]);
+
+        if ($request->hasFile('cover_image')) {
+            $validated['cover_image'] = $request->file('cover_image')->store('books/covers', 'public');
+        }
 
         Book::create($validated);
 
@@ -105,7 +110,16 @@ class BookController extends Controller
             'entry_date' => 'required|date',
             'price' => 'nullable|numeric|min:0',
             'is_textbook' => 'boolean',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB Max
         ]);
+
+        if ($request->hasFile('cover_image')) {
+            // Delete old image if exists
+            if ($book->cover_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($book->cover_image)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($book->cover_image);
+            }
+            $validated['cover_image'] = $request->file('cover_image')->store('books/covers', 'public');
+        }
 
         $book->update($validated);
 
@@ -127,6 +141,10 @@ class BookController extends Controller
                 ->with('error', 'Buku tidak dapat dihapus karena masih ada peminjaman aktif.');
         }
 
+        if ($book->cover_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($book->cover_image)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($book->cover_image);
+        }
+
         $book->delete();
 
         return redirect()
@@ -139,6 +157,27 @@ class BookController extends Controller
         return response()->json(
             $classification->subClassifications()->orderBy('sub_ddc_code')->get()
         );
+    }
+
+    public function printLabel(Request $request)
+    {
+        $bookIds = $request->input('books', []);
+        
+        if (empty($bookIds)) {
+            // If single ID provided via route parameter (not supported here, but good for robust design)
+            // Or if accessed directly, redirect back
+            return redirect()->back()->with('error', 'Pilih minimal satu buku untuk dicetak labelnya.');
+        }
+
+        $books = Book::whereIn('id', $bookIds)
+            ->with(['classification', 'subClassification'])
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('books.print-label', [
+            'books' => $books
+        ]);
+
+        return $pdf->stream('label-buku.pdf');
     }
 
     public function downloadTemplate()

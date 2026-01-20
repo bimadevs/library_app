@@ -26,21 +26,6 @@
                         <p class="form-error">{{ $message }}</p>
                     @enderror
                 </div>
-
-                <div>
-                    <label for="level" class="form-label">Tingkat <span class="text-red-500">*</span></label>
-                    <select name="level" id="level" class="form-select @error('level') border-red-500 @enderror" required>
-                        <option value="">Pilih Tingkat</option>
-                        @for($i = 10; $i <= 12; $i++)
-                            <option value="{{ $i }}" {{ old('level', $class->level) == $i ? 'selected' : '' }}>
-                                Kelas {{ $i }} ({{ ['X', 'XI', 'XII'][$i - 10] }})
-                            </option>
-                        @endfor
-                    </select>
-                    @error('level')
-                        <p class="form-error">{{ $message }}</p>
-                    @enderror
-                </div>
             </div>
 
             <div class="flex items-center gap-3 mt-6 pt-6 border-t border-slate-200">

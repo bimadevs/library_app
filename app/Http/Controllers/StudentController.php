@@ -40,7 +40,12 @@ class StudentController extends Controller
             'phone' => 'required|string|max:20',
             'max_loan' => 'required|integer|min:1|max:10',
             'is_active' => 'boolean',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB Max
         ]);
+
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('students/photos', 'public');
+        }
 
         $validated['is_active'] = $request->boolean('is_active');
 
@@ -85,7 +90,16 @@ class StudentController extends Controller
             'phone' => 'required|string|max:20',
             'max_loan' => 'required|integer|min:1|max:10',
             'is_active' => 'boolean',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB Max
         ]);
+
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
+            }
+            $validated['photo'] = $request->file('photo')->store('students/photos', 'public');
+        }
 
         $validated['is_active'] = $request->boolean('is_active');
 
@@ -103,6 +117,10 @@ class StudentController extends Controller
             return redirect()
                 ->route('students.index')
                 ->with('error', 'Siswa tidak dapat dihapus karena masih memiliki peminjaman aktif.');
+        }
+
+        if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
         }
 
         $student->delete();

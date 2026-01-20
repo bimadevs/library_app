@@ -7,14 +7,21 @@
         <!-- Book Info Card -->
         <div class="card">
             <div class="flex items-start justify-between mb-6">
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <h3 class="card-header mb-0">{{ $book->title }}</h3>
-                        @if($book->is_textbook)
-                            <span class="badge badge-primary">Buku Paket</span>
-                        @endif
+                <div class="flex gap-6">
+                    <!-- Cover Image -->
+                    <div class="w-32 h-44 bg-slate-100 rounded-lg overflow-hidden shadow-sm border border-slate-200 flex-shrink-0">
+                        <img src="{{ $book->cover_url }}" alt="Cover" class="w-full h-full object-cover">
                     </div>
-                    <p class="text-slate-500">{{ $book->author }}</p>
+                    
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="card-header mb-0">{{ $book->title }}</h3>
+                            @if($book->is_textbook)
+                                <span class="badge badge-primary">Buku Paket</span>
+                            @endif
+                        </div>
+                        <p class="text-slate-500 text-lg">{{ $book->author }}</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
                     <a href="{{ route('books.edit', $book) }}" class="btn btn-secondary">
@@ -29,6 +36,16 @@
                         </svg>
                         Kembali
                     </a>
+                    <form action="{{ route('books.print-label') }}" method="POST" target="_blank" class="inline">
+                        @csrf
+                        <input type="hidden" name="books[]" value="{{ $book->id }}">
+                        <button type="submit" class="btn btn-warning">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10v4H7V7zM7 11h10v4H7v-4zM7 15h10v2H7v-2zM5 7V5h14v2M5 19h14v2H5v-2z"/>
+                            </svg>
+                            Cetak Label
+                        </button>
+                    </form>
                 </div>
             </div>
 
