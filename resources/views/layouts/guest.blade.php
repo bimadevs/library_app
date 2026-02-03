@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ $librarySetting->school_name ?? config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -25,17 +25,24 @@
 
             <!-- Content -->
             <div class="w-full sm:max-w-md mt-6 px-8 py-8 bg-white shadow-xl shadow-slate-200/50 overflow-hidden sm:rounded-2xl border border-slate-100 relative z-10">
-                <div class="flex justify-center mb-8">
+                <div class="flex flex-col items-center justify-center mb-8 gap-4">
                     <a href="/">
-                        <x-application-logo class="w-16 h-16 fill-current text-indigo-600" />
+                        @if(isset($librarySetting) && $librarySetting->logo_url)
+                            <img src="{{ $librarySetting->logo_url }}" alt="Logo" class="h-20 w-auto object-contain">
+                        @else
+                            <x-application-logo class="w-20 h-20 fill-current text-indigo-600" />
+                        @endif
                     </a>
+                    <h1 class="text-xl font-bold text-slate-800 text-center">
+                        {{ $librarySetting->school_name ?? 'Sistem Perpustakaan' }}
+                    </h1>
                 </div>
                 
                 {{ $slot }}
             </div>
             
             <div class="mt-8 text-center text-sm text-slate-400 relative z-10">
-                &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+                &copy; {{ date('Y') }} {{ $librarySetting->school_name ?? config('app.name') }}. All rights reserved.
             </div>
         </div>
     </body>
