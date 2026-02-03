@@ -219,7 +219,7 @@ describe('Fine Report', function () {
         expect($export->headings())->toContain('NIS');
         expect($export->headings())->toContain('Nama Siswa');
         expect($export->headings())->toContain('Tipe Denda');
-        expect($export->headings())->toContain('Status Bayar');
+        expect($export->headings())->toContain('Status Pembayaran');
     });
 });
 

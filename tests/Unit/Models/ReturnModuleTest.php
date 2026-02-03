@@ -241,7 +241,7 @@ it('processes return and creates fine record for late returns - Property 6 integ
         $expectedFine = $daysOverdue * $dailyFine;
 
         // Process return
-        $result = $this->returnService->processReturn($loan, false, $returnDate);
+        $result = $this->returnService->processReturn($loan, false, false, $returnDate);
 
         // Verify loan status
         expect($result['loan']->status)->toBe('returned');
@@ -354,7 +354,7 @@ it('does not create fine for on-time returns - Property 6 no fine case', functio
         $returnDate = $loan->due_date->copy()->subDays($daysEarly);
 
         // Process return
-        $result = $this->returnService->processReturn($loan, false, $returnDate);
+        $result = $this->returnService->processReturn($loan, false, false, $returnDate);
 
         // Verify loan status
         expect($result['loan']->status)->toBe('returned');

@@ -2,14 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreStudentRequest;
+use App\Http\Requests\UpdateStudentRequest;
 use App\Models\AcademicYear;
 use App\Models\Major;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\StudentService;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+    protected StudentService $studentService;
+
+    public function __construct(StudentService $studentService)
+    {
+        $this->studentService = $studentService;
+    }
+
     public function index()
     {
         return view('students.index');
@@ -25,31 +35,25 @@ class StudentController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreStudentRequest $request)
     {
-        $validated = $request->validate([
-            'nis' => 'required|string|max:20|unique:students,nis',
-            'name' => 'required|string|max:100',
-            'birth_place' => 'required|string|max:50',
-            'birth_date' => 'required|date',
-            'address' => 'required|string|max:255',
-            'class_id' => 'required|exists:classes,id',
-            'major_id' => 'required|exists:majors,id',
-            'gender' => 'required|in:male,female',
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'phone' => 'required|string|max:20',
-            'max_loan' => 'required|integer|min:1|max:10',
-            'is_active' => 'boolean',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB Max
-        ]);
+        // We need to merge the boolean logic here because FormRequest validation doesn't transform data
+        // Checkboxes that are unchecked are not sent.
+        // But StoreStudentRequest validation rules includes 'is_active' => 'boolean'.
+        // If not present, it's ignored by validated().
+        // So we pass validated() to service, and service handles missing key as false.
 
-        if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('students/photos', 'public');
-        }
+        // However, if we want to be explicit about it being from the request:
+        $data = $request->validated();
+        // If checkbox is checked, it sends '1' or 'on'. Validation allows it.
+        // If unchecked, nothing sent.
+        // But for update, we need to know if it was unchecked.
 
-        $validated['is_active'] = $request->boolean('is_active');
+        // Actually, for store/update, we can just merge the boolean value from request helper
+        // which handles all cases correctly.
+        $data['is_active'] = $request->boolean('is_active');
 
-        Student::create($validated);
+        $this->studentService->createStudent($data);
 
         return redirect()
             ->route('students.index')
@@ -75,35 +79,12 @@ class StudentController extends Controller
         ]);
     }
 
-    public function update(Request $request, Student $student)
+    public function update(UpdateStudentRequest $request, Student $student)
     {
-        $validated = $request->validate([
-            'nis' => 'required|string|max:20|unique:students,nis,' . $student->id,
-            'name' => 'required|string|max:100',
-            'birth_place' => 'required|string|max:50',
-            'birth_date' => 'required|date',
-            'address' => 'required|string|max:255',
-            'class_id' => 'required|exists:classes,id',
-            'major_id' => 'required|exists:majors,id',
-            'gender' => 'required|in:male,female',
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'phone' => 'required|string|max:20',
-            'max_loan' => 'required|integer|min:1|max:10',
-            'is_active' => 'boolean',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB Max
-        ]);
+        $data = $request->validated();
+        $data['is_active'] = $request->boolean('is_active');
 
-        if ($request->hasFile('photo')) {
-            // Delete old photo if exists
-            if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
-            }
-            $validated['photo'] = $request->file('photo')->store('students/photos', 'public');
-        }
-
-        $validated['is_active'] = $request->boolean('is_active');
-
-        $student->update($validated);
+        $this->studentService->updateStudent($student, $data);
 
         return redirect()
             ->route('students.index')
@@ -112,18 +93,13 @@ class StudentController extends Controller
 
     public function destroy(Student $student)
     {
-        // Check for active loans
-        if ($student->activeLoans()->exists()) {
+        if ($this->studentService->hasActiveLoans($student)) {
             return redirect()
                 ->route('students.index')
                 ->with('error', 'Siswa tidak dapat dihapus karena masih memiliki peminjaman aktif.');
         }
 
-        if ($student->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($student->photo)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($student->photo);
-        }
-
-        $student->delete();
+        $this->studentService->deleteStudent($student);
 
         return redirect()
             ->route('students.index')
@@ -140,17 +116,10 @@ class StudentController extends Controller
             'Expires' => '0',
         ];
 
-        $columns = ['nis', 'nama', 'tempat_lahir', 'tanggal_lahir', 'alamat', 'kelas', 'jurusan', 'jenis_kelamin', 'tahun_ajaran', 'telepon', 'maks_pinjam'];
-        $example = ['1234567890', 'Nama Siswa', 'Jakarta', '2005-01-15', 'Jl. Contoh No. 123', 'X', 'TJKT', 'L', '2024/2025', '081234567890', '3'];
-
-        $callback = function() use ($columns, $example) {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
-            fputcsv($file, $columns);
-            fputcsv($file, $example);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return response()->stream(
+            $this->studentService->generateImportTemplateCallback(),
+            200,
+            $headers
+        );
     }
 }
