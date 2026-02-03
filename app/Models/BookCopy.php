@@ -18,6 +18,12 @@ class BookCopy extends Model
         'status',
     ];
 
+    public const STATUS_AVAILABLE = 'available';
+    public const STATUS_BORROWED = 'borrowed';
+    public const STATUS_LOST = 'lost';
+    public const STATUS_DAMAGED = 'damaged';
+    public const STATUS_REPAIR = 'repair';
+
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
@@ -35,6 +41,26 @@ class BookCopy extends Model
 
     public function isAvailable(): bool
     {
-        return $this->status === 'available';
+        return $this->status === self::STATUS_AVAILABLE;
+    }
+
+    public function isBorrowed(): bool
+    {
+        return $this->status === self::STATUS_BORROWED;
+    }
+
+    public function isLost(): bool
+    {
+        return $this->status === self::STATUS_LOST;
+    }
+
+    public function isDamaged(): bool
+    {
+        return $this->status === self::STATUS_DAMAGED;
+    }
+
+    public function isUnderRepair(): bool
+    {
+        return $this->status === self::STATUS_REPAIR;
     }
 }

@@ -179,6 +179,17 @@
             </div>
         </div>
 
+        <!-- Backup -->
+        <a href="{{ route('backup.download') }}"
+           class="sidebar-link mt-2"
+           :class="{ 'justify-center': collapsed }"
+           title="Backup Database">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span x-show="!collapsed" class="ml-3 transition-opacity duration-300">Backup Database</span>
+        </a>
+
         <!-- Visitor Check-in (Kiosk) -->
         <a href="{{ route('visitors.check-in') }}" 
            class="sidebar-link mt-2 {{ request()->routeIs('visitors.check-in') ? 'active' : '' }}" 
