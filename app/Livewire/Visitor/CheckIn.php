@@ -93,6 +93,6 @@ class CheckIn extends Component
 
     public function render()
     {
-        return view('livewire.visitor.check-in')->layout('layouts.app', ['header' => 'Buku Tamu Perpustakaan']);
+        return view('livewire.visitor.check-in')->layout('layouts.kiosk');
     }
 }

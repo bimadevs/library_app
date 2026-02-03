@@ -48,12 +48,38 @@ class BookReportController extends Controller
 
     protected function getTopBorrowedBooks(string $startDate, string $endDate, string $categoryId, int $limit)
     {
-        $query = Book::select('books.*')
+        // Use a subquery or modify strict mode config, but better to be explicit in group by
+        // or select specific columns. Selecting 'books.*' with 'groupBy(books.id)' violates ONLY_FULL_GROUP_BY
+        // because other columns in 'books' are not aggregated.
+        
+        $query = Book::select([
+                'books.id',
+                'books.code',
+                'books.title',
+                'books.author',
+                'books.publisher_id',
+                'books.publish_year',
+                'books.isbn',
+                'books.cover_image',
+                'books.category_id',
+                'books.stock'
+            ])
             ->selectRaw('COUNT(loans.id) as loan_count')
             ->join('book_copies', 'books.id', '=', 'book_copies.book_id')
             ->join('loans', 'book_copies.id', '=', 'loans.book_copy_id')
             ->whereBetween('loans.loan_date', [$startDate, $endDate])
-            ->groupBy('books.id')
+            ->groupBy([
+                'books.id',
+                'books.code',
+                'books.title',
+                'books.author',
+                'books.publisher_id',
+                'books.publish_year',
+                'books.isbn',
+                'books.cover_image',
+                'books.category_id',
+                'books.stock'
+            ])
             ->orderByDesc('loan_count');
 
         if ($categoryId !== 'all') {
@@ -65,11 +91,35 @@ class BookReportController extends Controller
 
     protected function getNeverBorrowedBooks(string $categoryId, int $limit)
     {
-        $query = Book::select('books.*')
+        $query = Book::select([
+                'books.id',
+                'books.code',
+                'books.title',
+                'books.author',
+                'books.publisher_id',
+                'books.publish_year',
+                'books.isbn',
+                'books.cover_image',
+                'books.category_id',
+                'books.stock',
+                'books.entry_date'
+            ])
             ->leftJoin('book_copies', 'books.id', '=', 'book_copies.book_id')
             ->leftJoin('loans', 'book_copies.id', '=', 'loans.book_copy_id')
             ->whereNull('loans.id')
-            ->groupBy('books.id')
+            ->groupBy([
+                'books.id',
+                'books.code',
+                'books.title',
+                'books.author',
+                'books.publisher_id',
+                'books.publish_year',
+                'books.isbn',
+                'books.cover_image',
+                'books.category_id',
+                'books.stock',
+                'books.entry_date'
+            ])
             ->orderBy('books.entry_date', 'desc');
 
         if ($categoryId !== 'all') {

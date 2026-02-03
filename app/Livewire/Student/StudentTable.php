@@ -73,6 +73,18 @@ class StudentTable extends Component
         $this->resetPage();
     }
 
+    public function delete(Student $student)
+    {
+        // Check if student has related records that prevent deletion
+        if ($student->loans()->exists() || $student->fines()->exists()) {
+            session()->flash('error', 'Siswa tidak dapat dihapus karena memiliki riwayat peminjaman atau denda.');
+            return;
+        }
+
+        $student->delete();
+        session()->flash('success', 'Siswa berhasil dihapus.');
+    }
+
     public function render()
     {
         $students = Student::query()

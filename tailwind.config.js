@@ -14,6 +14,16 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                primary: defaultTheme.colors.indigo,
+                secondary: defaultTheme.colors.teal,
+                danger: defaultTheme.colors.rose,
+                success: defaultTheme.colors.emerald,
+                warning: defaultTheme.colors.amber,
+            },
+            boxShadow: {
+                'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+            }
         },
     },
 

@@ -129,6 +129,7 @@
                 <a href="{{ route('books.create') }}" class="sidebar-submenu-link {{ request()->routeIs('books.create') ? 'active' : '' }}" wire:navigate>Tambah Buku</a>
                 <a href="{{ route('books.import') }}" class="sidebar-submenu-link {{ request()->routeIs('books.import') ? 'active' : '' }}" wire:navigate>Import Buku</a>
                 <a href="{{ route('books.barcode') }}" class="sidebar-submenu-link {{ request()->routeIs('books.barcode') ? 'active' : '' }}" wire:navigate>Generate Barcode</a>
+                <a href="{{ route('books.label') }}" class="sidebar-submenu-link {{ request()->routeIs('books.label') ? 'active' : '' }}" wire:navigate>Cetak Label</a>
             </div>
         </div>
 

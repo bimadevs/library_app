@@ -4,15 +4,15 @@ namespace App\Services;
 
 use App\Models\Book;
 use App\Models\BookCopy;
-use Picqer\Barcode\BarcodeGeneratorPNG;
+use Picqer\Barcode\BarcodeGeneratorSVG;
 
 class BarcodeService
 {
-    protected BarcodeGeneratorPNG $generator;
+    protected BarcodeGeneratorSVG $generator;
 
     public function __construct()
     {
-        $this->generator = new BarcodeGeneratorPNG();
+        $this->generator = new BarcodeGeneratorSVG();
     }
 
     /**
@@ -64,14 +64,14 @@ class BarcodeService
     }
 
     /**
-     * Generate barcode image as base64 encoded PNG
+     * Generate barcode image as base64 encoded SVG
      * 
      * @param string $barcodeString
-     * @return string Base64 encoded PNG image
+     * @return string Base64 encoded SVG image
      */
     public function generateBarcodeImage(string $barcodeString): string
     {
-        $barcode = $this->generator->getBarcode($barcodeString, $this->generator::TYPE_CODE_128, 2, 50);
+        $barcode = $this->generator->getBarcode($barcodeString, $this->generator::TYPE_CODE_128);
         return base64_encode($barcode);
     }
 

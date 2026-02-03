@@ -11,7 +11,9 @@ class SubClassificationController extends Controller
 {
     public function index()
     {
-        return view('master.sub-classifications.index');
+        return view('master.sub-classifications.index', [
+            'classifications' => Classification::orderBy('ddc_code')->get(),
+        ]);
     }
 
     public function create()

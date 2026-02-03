@@ -1,22 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        Kenaikan Kelas
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <a href="{{ route('students.index') }}" class="hover:text-indigo-600 transition-colors">Daftar Siswa</a>
+            <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+            <span class="text-slate-800 font-medium">Kenaikan Kelas</span>
+        </div>
     </x-slot>
 
-    <div class="card max-w-5xl">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h3 class="card-header mb-0">Kenaikan Kelas Siswa</h3>
-                <p class="text-sm text-slate-500 mt-1">Naikkan siswa dari satu kelas ke kelas berikutnya</p>
-            </div>
-            <a href="{{ route('students.index') }}" class="btn btn-secondary">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                Kembali
-            </a>
-        </div>
-
+    <div class="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8 py-8">
         <livewire:student.class-promotion />
     </div>
 </x-app-layout>

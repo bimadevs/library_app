@@ -1,5 +1,5 @@
-<div class="card">
-    <div class="card-header flex items-center justify-between">
+<div class="card h-full">
+    <div class="card-header">
         <span>Denda Belum Lunas</span>
         <span class="badge badge-danger">{{ $count }}</span>
     </div>
@@ -12,26 +12,26 @@
             <p>Tidak ada denda yang belum lunas</p>
         </div>
     @else
-        <div class="overflow-x-auto">
-            <table class="w-full">
+        <div class="data-table-container">
+            <table class="data-table">
                 <thead>
-                    <tr class="border-b border-slate-200">
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-600">Siswa</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-600">Jumlah</th>
-                        <th class="text-left py-3 px-4 text-sm font-medium text-slate-600">Alasan</th>
+                    <tr>
+                        <th>Siswa</th>
+                        <th>Jumlah</th>
+                        <th>Alasan</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($fines as $fine)
-                        <tr class="border-b border-slate-100 hover:bg-slate-50">
-                            <td class="py-3 px-4">
-                                <div class="font-medium text-slate-800">{{ $fine->student->name }}</div>
-                                <div class="text-sm text-slate-500">{{ $fine->student->nis }}</div>
+                        <tr>
+                            <td>
+                                <div class="font-medium text-slate-900">{{ $fine->student->name }}</div>
+                                <div class="text-xs text-slate-500">{{ $fine->student->nis }}</div>
                             </td>
-                            <td class="py-3 px-4">
-                                <span class="font-medium text-red-600">Rp {{ number_format($fine->amount, 0, ',', '.') }}</span>
+                            <td>
+                                <span class="font-medium text-rose-600">Rp {{ number_format($fine->amount, 0, ',', '.') }}</span>
                             </td>
-                            <td class="py-3 px-4">
+                            <td>
                                 @if($fine->type === 'late')
                                     <span class="badge badge-warning">Terlambat {{ $fine->days_overdue }} hari</span>
                                 @else
@@ -44,10 +44,10 @@
             </table>
         </div>
         
-        <div class="border-t border-slate-200 px-4 py-3 bg-slate-50">
+        <div class="border-t border-slate-200 px-6 py-4 bg-slate-50 rounded-b-xl mt-px">
             <div class="flex justify-between items-center">
-                <span class="text-sm text-slate-600">Total Denda Belum Lunas:</span>
-                <span class="font-bold text-red-600">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                <span class="text-sm font-medium text-slate-600">Total Denda Belum Lunas</span>
+                <span class="font-bold text-lg text-rose-600">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
             </div>
         </div>
     @endif

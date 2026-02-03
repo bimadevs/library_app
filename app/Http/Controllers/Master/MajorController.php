@@ -23,7 +23,6 @@ class MajorController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:20|unique:majors,code',
             'name' => 'required|string|max:100',
         ]);
 
@@ -44,7 +43,6 @@ class MajorController extends Controller
     public function update(Request $request, Major $major)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:20|unique:majors,code,' . $major->id,
             'name' => 'required|string|max:100',
         ]);
 

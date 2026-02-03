@@ -79,6 +79,7 @@ Route::middleware('auth')->group(function () {
 
     // Book Routes
     Route::post('/books/print-label', [BookController::class, 'printLabel'])->name('books.print-label');
+    Route::get('/books-label', [App\Http\Controllers\Book\BookLabelController::class, 'index'])->name('books.label');
     Route::resource('books', BookController::class);
     Route::get('/books-import', fn() => view('books.import'))->name('books.import');
     Route::get('/books-import/template', [BookController::class, 'downloadTemplate'])->name('books.import.template');

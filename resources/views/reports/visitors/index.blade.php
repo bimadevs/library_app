@@ -1,36 +1,41 @@
 <x-app-layout>
     <x-slot name="header">
-        Laporan Pengunjung
+        <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+            {{ __('Laporan Pengunjung') }}
+        </h2>
     </x-slot>
 
     <div class="space-y-6">
         <!-- Filter Section -->
         <div class="card">
-            <form action="{{ route('reports.visitors') }}" method="GET" class="flex flex-wrap items-end gap-4">
-                <div>
-                    <label class="form-label">Dari Tanggal</label>
-                    <input type="date" name="start_date" value="{{ $startDate }}" class="form-input">
-                </div>
-                <div>
-                    <label class="form-label">Sampai Tanggal</label>
-                    <input type="date" name="end_date" value="{{ $endDate }}" class="form-input">
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                    </svg>
-                    Filter
-                </button>
-                <div class="ml-auto">
-                    <!-- Export Buttons (Placeholder for future) -->
-                    <button type="button" class="btn btn-secondary opacity-50 cursor-not-allowed" title="Segera Hadir">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Export PDF
-                    </button>
-                </div>
-            </form>
+            <div class="card-body">
+                <form action="{{ route('reports.visitors') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                    <div class="md:col-span-4">
+                        <label class="form-label">Dari Tanggal</label>
+                        <input type="date" name="start_date" value="{{ $startDate }}" class="form-input w-full">
+                    </div>
+                    <div class="md:col-span-4">
+                        <label class="form-label">Sampai Tanggal</label>
+                        <input type="date" name="end_date" value="{{ $endDate }}" class="form-input w-full">
+                    </div>
+                    <div class="md:col-span-4 flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-1 justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                            Filter
+                        </button>
+                        
+                        <!-- Export Buttons (Placeholder for future) -->
+                        <button type="button" class="btn btn-secondary flex-1 justify-center opacity-50 cursor-not-allowed" title="Segera Hadir">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Export PDF
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <!-- KPI Cards -->
@@ -74,50 +79,69 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Line Chart: Tren Harian -->
             <div class="card">
-                <h3 class="card-header">Tren Kunjungan Harian</h3>
-                <div id="dailyTrendChart" class="h-80"></div>
+                <div class="card-header">
+                    <h3 class="card-title">Tren Kunjungan Harian</h3>
+                </div>
+                <div class="card-body">
+                    <div id="dailyTrendChart" class="h-80"></div>
+                </div>
             </div>
 
             <!-- Bar Chart: Top Kelas -->
             <div class="card">
-                <h3 class="card-header">Top 10 Kelas Teraktif</h3>
-                <div id="classChart" class="h-80"></div>
+                <div class="card-header">
+                    <h3 class="card-title">Top 10 Kelas Teraktif</h3>
+                </div>
+                <div class="card-body">
+                    <div id="classChart" class="h-80"></div>
+                </div>
             </div>
         </div>
 
         <!-- Detailed Table -->
         <div class="card">
-            <h3 class="card-header">Riwayat Kunjungan</h3>
-            <div class="overflow-x-auto">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Tanggal & Jam</th>
-                            <th>Nama Siswa</th>
-                            <th>Kelas</th>
-                            <th>Jurusan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($recentVisitors as $index => $visitor)
-                            <tr>
-                                <td>{{ $recentVisitors->firstItem() + $index }}</td>
-                                <td>{{ $visitor->created_at->format('d/m/Y H:i') }}</td>
-                                <td class="font-medium">{{ $visitor->student->name }}</td>
-                                <td>{{ $visitor->student->class->name ?? '-' }}</td>
-                                <td>{{ $visitor->student->major->name ?? '-' }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-slate-500">Tidak ada data kunjungan pada periode ini.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="card-header">
+                <h3 class="card-title">Riwayat Kunjungan</h3>
             </div>
-            <div class="mt-4">
-                {{ $recentVisitors->withQueryString()->links() }}
+            <div class="card-body p-0">
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="w-12 text-center">No</th>
+                                <th>Tanggal & Jam</th>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Jurusan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentVisitors as $index => $visitor)
+                                <tr class="hover:bg-slate-50">
+                                    <td class="text-center">{{ $recentVisitors->firstItem() + $index }}</td>
+                                    <td>{{ $visitor->created_at->format('d/m/Y H:i') }}</td>
+                                    <td class="font-medium text-slate-800">{{ $visitor->student->name }}</td>
+                                    <td>{{ $visitor->student->class->name ?? '-' }}</td>
+                                    <td>{{ $visitor->student->major->name ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-12">
+                                        <div class="flex flex-col items-center justify-center text-slate-500">
+                                            <svg class="w-12 h-12 mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                            </svg>
+                                            <p>Tidak ada data kunjungan pada periode ini.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-200">
+                    {{ $recentVisitors->withQueryString()->links() }}
+                </div>
             </div>
         </div>
     </div>
@@ -135,13 +159,17 @@
                 height: 320,
                 type: 'area',
                 toolbar: { show: false },
-                zoom: { enabled: false }
+                zoom: { enabled: false },
+                fontFamily: 'Figtree, sans-serif'
             },
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 2 },
             xaxis: {
                 categories: @json($dailyTrend->pluck('date')),
-                type: 'datetime'
+                type: 'datetime',
+                labels: {
+                    format: 'dd MMM'
+                }
             },
             colors: ['#10b981'],
             fill: {
@@ -152,6 +180,10 @@
                     opacityTo: 0.2,
                     stops: [0, 90, 100]
                 }
+            },
+            grid: {
+                borderColor: '#e2e8f0',
+                strokeDashArray: 4,
             }
         };
         new ApexCharts(document.querySelector("#dailyTrendChart"), dailyOptions).render();
@@ -165,16 +197,25 @@
             chart: {
                 height: 320,
                 type: 'bar',
-                toolbar: { show: false }
+                toolbar: { show: false },
+                fontFamily: 'Figtree, sans-serif'
             },
             plotOptions: {
-                bar: { borderRadius: 4, horizontal: true }
+                bar: { 
+                    borderRadius: 4, 
+                    horizontal: true,
+                    barHeight: '60%'
+                }
             },
             dataLabels: { enabled: true },
             xaxis: {
                 categories: @json($visitorsByClass->pluck('class_name'))
             },
-            colors: ['#3b82f6']
+            colors: ['#3b82f6'],
+            grid: {
+                borderColor: '#e2e8f0',
+                strokeDashArray: 4,
+            }
         };
         new ApexCharts(document.querySelector("#classChart"), classOptions).render();
     </script>

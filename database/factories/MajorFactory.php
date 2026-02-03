@@ -12,7 +12,6 @@ class MajorFactory extends Factory
     public function definition(): array
     {
         return [
-            'code' => strtoupper($this->faker->unique()->lexify('???')),
             'name' => $this->faker->words(3, true),
         ];
     }

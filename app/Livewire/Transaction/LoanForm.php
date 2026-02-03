@@ -41,6 +41,27 @@ class LoanForm extends Component
         $this->loanService = $loanService;
     }
 
+    public function mount()
+    {
+        if (request()->has('student_nis')) {
+            $student = Student::where('nis', request('student_nis'))->first();
+            if ($student) {
+                $this->selectStudent($student->id);
+            }
+        }
+        
+        if (request()->has('book_id')) {
+            // Find first available copy for this book
+            $bookCopy = BookCopy::where('book_id', request('book_id'))
+                ->where('status', 'available')
+                ->first();
+                
+            if ($bookCopy) {
+                $this->selectBookCopy($bookCopy->id);
+            }
+        }
+    }
+
     protected $rules = [
         'studentId' => 'required|exists:students,id',
         'bookCopyId' => 'required|exists:book_copies,id',
@@ -208,8 +229,10 @@ class LoanForm extends Component
 
             $this->successMessage = "Peminjaman berhasil! Buku '{$bookCopy->book->title}' dipinjam oleh {$student->name}. Jatuh tempo: {$loan->due_date->format('d/m/Y')}";
 
-            // Reset form for next loan
-            $this->resetBookSelection();
+            // Full Reset for new transaction
+            $this->resetForm();
+            // But preserve the success message
+            $this->successMessage = "Peminjaman berhasil! Buku '{$bookCopy->book->title}' dipinjam oleh {$student->name}. Jatuh tempo: {$loan->due_date->format('d/m/Y')}";
 
         } catch (\InvalidArgumentException $e) {
             $this->errorMessage = $e->getMessage();

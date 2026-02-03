@@ -16,7 +16,6 @@ class SchoolClassFactory extends Factory
         
         return [
             'name' => $level . ' ' . $this->faker->randomElement(['A', 'B', 'C', 'D']),
-            'level' => $level,
         ];
     }
 }

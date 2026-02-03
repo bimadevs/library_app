@@ -44,7 +44,7 @@
                 <div class="grid grid-cols-3 gap-4">
                     @foreach($printData as $data)
                         <div class="border border-slate-200 rounded p-3 text-center">
-                            <img src="data:image/png;base64,{{ $data['image'] }}" 
+                            <img src="data:image/svg+xml;base64,{{ $data['image'] }}" 
                                  alt="{{ $data['barcode'] }}" 
                                  class="mx-auto mb-2">
                             <p class="font-mono text-sm font-medium">{{ $data['barcode'] }}</p>

@@ -1,19 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        Import Siswa
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <a href="{{ route('students.index') }}" class="hover:text-indigo-600 transition-colors">Daftar Siswa</a>
+            <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+            <span class="text-slate-800 font-medium">Import Siswa</span>
+        </div>
     </x-slot>
 
-    <div class="card max-w-4xl">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="card-header mb-0">Import Data Siswa dari Excel</h3>
-            <a href="{{ route('students.index') }}" class="btn btn-secondary">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                Kembali
-            </a>
-        </div>
-
+    <div class="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8 py-8">
         <livewire:student.student-import />
     </div>
 </x-app-layout>
