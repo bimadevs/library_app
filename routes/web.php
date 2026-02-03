@@ -41,6 +41,10 @@ Route::middleware('auth')->group(function () {
     // Backup Route
     Route::get('/backup/download', [App\Http\Controllers\BackupController::class, 'download'])->name('backup.download');
 
+    // Library Settings Route
+    Route::get('/settings', [App\Http\Controllers\LibrarySettingController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [App\Http\Controllers\LibrarySettingController::class, 'update'])->name('settings.update');
+
     // Master Data Routes
     Route::prefix('master')->name('master.')->group(function () {
         // Academic Years
