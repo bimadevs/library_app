@@ -125,10 +125,10 @@
                                         <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Status Pinjaman</p>
                                         <div class="flex items-center gap-2 mt-1">
                                             <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                                <div class="h-full {{ $selectedStudent->active_loans_count >= $selectedStudent->max_loan ? 'bg-red-500' : 'bg-emerald-500' }}" style="width: {{ ($selectedStudent->active_loans_count / max(1, $selectedStudent->max_loan)) * 100 }}%"></div>
+                                                <div class="h-full {{ $selectedStudent->non_textbook_loans_count >= $selectedStudent->max_loan ? 'bg-red-500' : 'bg-emerald-500' }}" style="width: {{ ($selectedStudent->non_textbook_loans_count / max(1, $selectedStudent->max_loan)) * 100 }}%"></div>
                                             </div>
-                                            <span class="text-sm font-bold {{ $selectedStudent->active_loans_count >= $selectedStudent->max_loan ? 'text-red-600' : 'text-emerald-600' }}">
-                                                {{ $selectedStudent->active_loans_count }}/{{ $selectedStudent->max_loan }}
+                                            <span class="text-sm font-bold {{ $selectedStudent->non_textbook_loans_count >= $selectedStudent->max_loan ? 'text-red-600' : 'text-emerald-600' }}">
+                                                {{ $selectedStudent->non_textbook_loans_count }}/{{ $selectedStudent->max_loan }}
                                             </span>
                                         </div>
                                     </div>
@@ -168,86 +168,96 @@
                         </div>
                         <h3 class="font-semibold text-slate-800">Buku yang Dipinjam</h3>
                     </div>
-                    @if($selectedBookCopy)
-                        <button type="button" wire:click="clearBookCopy" class="text-sm text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            <span>Ganti Buku</span>
-                        </button>
-                    @endif
                 </div>
 
                 <div class="p-6">
-                    @if(!$selectedBookCopy)
-                        <div class="mb-6 relative">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Scan Barcode Cepat</label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                    <!-- Scanner Section (Always Visible) -->
+                    <div class="mb-6 relative">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Scan Barcode / Tambah Buku</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                    wire:model="barcodeInput" 
+                                    wire:keydown.enter.prevent="scanBarcode"
+                                    x-ref="bookBarcode"
+                                    x-bind:disabled="!studentSelected"
+                                       @keydown.window="if ($event.key === 'Enter' && studentSelected && $refs.bookBarcode.value === '' && $wire.selectedBookCopies.length > 0) { $wire.submit(); }"
+                                    placeholder="Scan barcode buku di sini..."
+                                    class="form-input pl-10 w-full transition-shadow focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed">
+                            <button type="button" 
+                                    wire:click="scanBarcode" 
+                                    x-bind:disabled="!studentSelected"
+                                    class="absolute inset-y-1 right-1 px-3 bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                Tambah
+                            </button>
+                        </div>
+                        <div class="mt-2 text-right">
+                            <button type="button" wire:click="openBookModal" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
+                                Atau cari di katalog manual &rarr;
+                            </button>
+                        </div>
+                        @error('selectedBookCopies')
+                            <p class="text-sm text-red-600 mt-2">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="border-t border-slate-100 my-6"></div>
+
+                    <!-- Selected Books List -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-medium text-slate-700">Daftar Buku ({{ $selectedBookCopies->count() }})</h4>
+                            @if($selectedBookCopies->isNotEmpty())
+                                <button type="button" wire:click="clearBookCopies" class="text-xs text-red-500 hover:text-red-700 font-medium">
+                                    Hapus Semua
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($selectedBookCopies->isEmpty())
+                            <div class="text-center py-8 px-4 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                     </svg>
                                 </div>
-                                <input type="text" 
-                                       wire:model="barcodeInput" 
-                                       wire:keydown.enter.prevent="scanBarcode"
-                                       x-ref="bookBarcode"
-                                       x-bind:disabled="!studentSelected"
-                                       @keydown.window="if ($event.key === 'Enter' && studentSelected && $refs.bookBarcode.value === '' && $wire.bookCopyId) { $wire.submit(); }"
-                                       placeholder="Scan barcode buku di sini..."
-                                       class="form-input pl-10 w-full transition-shadow focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed">
-                                <button type="button" 
-                                        wire:click="scanBarcode" 
-                                        x-bind:disabled="!studentSelected"
-                                        class="absolute inset-y-1 right-1 px-3 bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                    Cek
-                                </button>
+                                <p class="text-slate-500 text-sm">Belum ada buku yang dipilih</p>
+                                <p class="text-slate-400 text-xs mt-1">Scan barcode atau cari manual untuk menambahkan</p>
                             </div>
-                        </div>
-
-                        <div class="flex items-center gap-4 my-6">
-                            <div class="flex-1 h-px bg-slate-100"></div>
-                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Atau</span>
-                            <div class="flex-1 h-px bg-slate-100"></div>
-                        </div>
-
-                        <div class="text-center py-6 px-4 border-2 border-dashed border-slate-200 rounded-xl hover:border-emerald-300 transition-colors group cursor-pointer" wire:click="openBookModal">
-                            <div class="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </div>
-                            <span class="text-slate-600 font-medium group-hover:text-emerald-600 transition-colors">Cari Manual di Katalog</span>
-                        </div>
-                        @error('bookCopyId')
-                            <p class="text-sm text-red-600 mt-2 text-center">{{ $message }}</p>
-                        @enderror
-                    @else
-                        <div class="flex gap-5 animate-fade-in-up">
-                            <div class="w-24 h-32 bg-slate-100 rounded-lg flex-shrink-0 flex items-center justify-center border border-slate-200 shadow-sm">
-                                <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                </svg>
-                            </div>
-                            <div class="flex-1 py-1">
-                                <h4 class="text-lg font-bold text-slate-800 leading-tight">{{ $selectedBookCopy->book->title }}</h4>
-                                <p class="text-slate-500 text-sm mt-1 mb-3">{{ $selectedBookCopy->book->author }}</p>
-                                
-                                <div class="flex flex-wrap gap-3">
-                                    <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-lg">
-                                        <p class="text-xs text-slate-500 uppercase">Barcode</p>
-                                        <p class="font-mono font-medium text-slate-800">{{ $selectedBookCopy->barcode }}</p>
+                        @else
+                            <div class="space-y-3">
+                                @foreach($selectedBookCopies as $bookCopy)
+                                    <div class="flex items-start gap-4 p-3 bg-white border border-slate-200 rounded-xl shadow-sm animate-fade-in-up group hover:border-emerald-200 transition-colors">
+                                        <div class="w-12 h-16 bg-slate-100 rounded flex-shrink-0 flex items-center justify-center border border-slate-200 text-slate-300">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-bold text-slate-800 text-sm leading-tight truncate">{{ $bookCopy->book->title }}</h4>
+                                            <p class="text-xs text-slate-500 truncate mt-0.5">{{ $bookCopy->book->author }}</p>
+                                            <div class="flex items-center gap-2 mt-2">
+                                                <span class="text-[10px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{{ $bookCopy->barcode }}</span>
+                                                <span class="text-[10px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{{ $bookCopy->book->code }}</span>
+                                            </div>
+                                        </div>
+                                        <button type="button" 
+                                                wire:click="removeBookCopy({{ $bookCopy->id }})"
+                                                class="text-slate-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                                title="Hapus buku">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-lg">
-                                        <p class="text-xs text-slate-500 uppercase">Kode Buku</p>
-                                        <p class="font-mono font-medium text-slate-800">{{ $selectedBookCopy->book->code }}</p>
-                                    </div>
-                                    <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-lg">
-                                        <p class="text-xs text-slate-500 uppercase">Lokasi</p>
-                                        <p class="font-medium text-slate-800">{{ $selectedBookCopy->shelf->name ?? '-' }}</p>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
-                        </div>
-                    @endif
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -397,8 +407,8 @@
                                                 </div>
                                                 <div class="text-right">
                                                     <span class="text-xs text-slate-400 block mb-1">Pinjaman</span>
-                                                    <span class="badge {{ $student->active_loans_count >= $student->max_loan ? 'badge-danger' : 'badge-success' }}">
-                                                        {{ $student->active_loans_count }}/{{ $student->max_loan }}
+                                                    <span class="badge {{ $student->non_textbook_loans_count >= $student->max_loan ? 'badge-danger' : 'badge-success' }}">
+                                                        {{ $student->non_textbook_loans_count }}/{{ $student->max_loan }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -459,7 +469,7 @@
                                 <div class="space-y-2">
                                     @foreach($this->bookCopies as $bookCopy)
                                         <button type="button"
-                                                wire:click="selectBookCopy({{ $bookCopy->id }})"
+                                                wire:click="addBookCopy({{ $bookCopy->id }})"
                                                 class="w-full text-left p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all group">
                                             <div class="flex items-start gap-4">
                                                 <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex-shrink-0 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">

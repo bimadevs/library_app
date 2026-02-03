@@ -75,6 +75,6 @@ class Student extends Model
             return \Illuminate\Support\Facades\Storage::url($this->photo);
         }
 
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random&size=200';
+        return asset('images/default-avatar.svg');
     }
 }

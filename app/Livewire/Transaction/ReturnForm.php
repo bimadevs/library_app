@@ -3,6 +3,7 @@
 namespace App\Livewire\Transaction;
 
 use App\Models\Student;
+use App\Models\Loan;
 use App\Services\FineCalculatorService;
 use App\Services\ReturnService;
 use Livewire\Component;
@@ -24,6 +25,11 @@ class ReturnForm extends Component
     // Barcode scanner input
     public string $barcodeInput = '';
     
+    // Book Search for identifying borrower
+    public string $bookSearch = '';
+    public bool $showLoanSelectionModal = false;
+    public $foundLoans = [];
+
     // POS properties
     public $cashAmount = 0;
 
@@ -181,6 +187,74 @@ class ReturnForm extends Component
         } else {
             $this->paidFines[] = $loanId;
         }
+    }
+
+    // --- Borrower Search Actions ---
+    
+    public function searchBorrower()
+    {
+        $this->validate([
+            'bookSearch' => 'required|min:3',
+        ]);
+
+        $search = $this->bookSearch;
+
+        // Search active loans (not returned) matching barcode or book title
+        $loans = Loan::query()
+            ->with(['student.class', 'student.major', 'bookCopy.book'])
+            ->whereNull('return_date')
+            ->whereHas('bookCopy', function ($q) use ($search) {
+                $q->where('barcode', $search)
+                  ->orWhereHas('book', function ($q2) use ($search) {
+                      $q2->where('title', 'like', '%' . $search . '%');
+                  });
+            })
+            ->get();
+
+        if ($loans->isEmpty()) {
+            $this->errorMessage = "Tidak ditemukan peminjaman aktif untuk buku dengan kata kunci/barcode: {$search}";
+            return;
+        }
+
+        if ($loans->count() === 1) {
+            // Perfect match
+            $loan = $loans->first();
+            $this->selectLoanFromSearch($loan->id);
+        } else {
+            // Multiple matches
+            $this->foundLoans = $loans;
+            $this->showLoanSelectionModal = true;
+        }
+        
+        $this->bookSearch = '';
+    }
+
+    public function closeLoanSelectionModal()
+    {
+        $this->showLoanSelectionModal = false;
+        $this->foundLoans = [];
+    }
+
+    public function selectLoanFromSearch($loanId)
+    {
+        $loan = Loan::with('student')->find($loanId);
+        
+        if (!$loan) {
+            $this->errorMessage = "Data peminjaman tidak ditemukan.";
+            return;
+        }
+        
+        // Select the student
+        $this->selectStudent($loan->student_id);
+        
+        // Add specific book to selection
+        // We use the boolean 'true' to indicate forcing selection if not present
+        if (!in_array($loanId, $this->selectedLoans)) {
+            $this->selectedLoans[] = $loanId;
+        }
+        
+        $this->successMessage = "Buku ditemukan! Peminjam: {$loan->student->name}. Buku telah dipilih otomatis.";
+        $this->closeLoanSelectionModal();
     }
 
     // --- Core Logic ---

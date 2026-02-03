@@ -104,28 +104,54 @@
 
     @if(!$selectedStudent)
         <!-- Initial State: Search Student -->
+        <!-- Initial State: Search Student or Book -->
         <div class="max-w-2xl mx-auto py-12">
-            <div class="text-center mb-10">
-                <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20 transform rotate-3">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </div>
+            <div class="text-center mb-8">
                 <h3 class="text-2xl font-bold text-slate-800">Mulai Pengembalian</h3>
-                <p class="text-slate-500 mt-2">Cari siswa yang akan mengembalikan buku</p>
+                <p class="text-slate-500 mt-2">Cari siswa atau scan buku yang akan dikembalikan</p>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
-                <button type="button" 
-                        wire:click="openStudentModal" 
-                        x-ref="studentSearchTrigger"
-                        class="w-full bg-slate-50 hover:bg-slate-100 border-2 border-dashed border-slate-300 hover:border-blue-400 rounded-xl p-8 transition-all group text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <svg class="w-12 h-12 text-slate-400 group-hover:text-blue-500 mx-auto mb-3 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <span class="block text-lg font-medium text-slate-700 group-hover:text-blue-600">Klik untuk Cari Siswa</span>
-                    <span class="block text-sm text-slate-400 mt-1">atau scan kartu anggota</span>
-                </button>
+            <!-- Option 1: Scan/Search Book -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500 rounded-full opacity-5 -mr-10 -mt-10"></div>
+                <h4 class="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                    Scan / Cari Buku
+                </h4>
+                <div class="flex gap-2">
+                    <input type="text" 
+                           wire:model="bookSearch" 
+                           wire:keydown.enter="searchBorrower"
+                           placeholder="Scan barcode atau ketik judul buku..."
+                           class="form-input flex-1">
+                    <button wire:click="searchBorrower" class="btn btn-primary px-6">
+                        Cari
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">Sistem akan otomatis mendeteksi siswa peminjam.</p>
+            </div>
+
+            <div class="flex items-center gap-4 mb-6">
+                <div class="h-px bg-slate-200 flex-1"></div>
+                <span class="text-slate-400 text-sm font-medium">ATAU</span>
+                <div class="h-px bg-slate-200 flex-1"></div>
+            </div>
+
+            <!-- Option 2: Search Student -->
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-1 group cursor-pointer hover:border-blue-400 transition-colors"
+                 wire:click="openStudentModal">
+                <div class="p-6 flex items-center gap-6">
+                    <div class="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Cari Siswa Manual</h4>
+                        <p class="text-slate-500 text-sm">Cari berdasarkan Nama atau NIS siswa</p>
+                    </div>
+                    <div>
+                        <svg class="w-6 h-6 text-slate-300 group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </div>
             </div>
         </div>
     @else
@@ -463,6 +489,68 @@
                                     @endforeach
                                 </div>
                             @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Loan Selection Modal (For Ambiguous Search Results) -->
+    @if($showLoanSelectionModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" wire:click="closeLoanSelectionModal"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                    <div class="bg-white px-6 pt-6 pb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-slate-800">Pilih Peminjaman</h3>
+                            <button type="button" wire:click="closeLoanSelectionModal" class="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <p class="text-slate-500 mb-4">Ditemukan beberapa peminjaman aktif dengan kata kunci tersebut. Pilih salah satu untuk melanjutkan:</p>
+
+                        <div class="max-h-[60vh] overflow-y-auto custom-scrollbar space-y-3">
+                            @foreach($foundLoans as $loan)
+                                <button type="button"
+                                        wire:click="selectLoanFromSearch({{ $loan->id }})"
+                                        class="w-full text-left p-4 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-blue-300 transition-all group ring-0 focus:ring-2 focus:ring-blue-500">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="flex items-start gap-4">
+                                            <!-- Book Icon -->
+                                            <div class="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-600 flex-shrink-0 flex items-center justify-center">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                            </div>
+                                            
+                                            <!-- Details -->
+                                            <div>
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <span class="badge badge-success text-xs">{{ $loan->bookCopy->barcode }}</span>
+                                                    <span class="text-xs text-slate-400">{{ $loan->loan_date->format('d/m/Y') }}</span>
+                                                </div>
+                                                <h4 class="font-bold text-slate-800">{{ $loan->bookCopy->book->title }}</h4>
+                                                
+                                                <div class="flex items-center gap-2 mt-2">
+                                                    <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                                                        {{ substr($loan->student->name, 0, 1) }}
+                                                    </div>
+                                                    <span class="text-sm font-medium text-blue-600">{{ $loan->student->name }}</span>
+                                                    <span class="text-xs text-slate-500">({{ $loan->student->class->name ?? '-' }})</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="hidden group-hover:block text-blue-500">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                        </div>
+                                    </div>
+                                </button>
+                            @endforeach
                         </div>
                     </div>
                 </div>

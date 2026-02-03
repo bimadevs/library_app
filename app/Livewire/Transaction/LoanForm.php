@@ -17,8 +17,7 @@ class LoanForm extends Component
     public bool $showStudentModal = false;
 
     // Book selection
-    public ?int $bookCopyId = null;
-    public ?BookCopy $selectedBookCopy = null;
+    public $selectedBookCopies; // Collection of BookCopy models
     public string $bookSearch = '';
     public bool $showBookModal = false;
 
@@ -43,6 +42,8 @@ class LoanForm extends Component
 
     public function mount()
     {
+        $this->selectedBookCopies = collect();
+
         if (request()->has('student_nis')) {
             $student = Student::where('nis', request('student_nis'))->first();
             if ($student) {
@@ -57,14 +58,14 @@ class LoanForm extends Component
                 ->first();
                 
             if ($bookCopy) {
-                $this->selectBookCopy($bookCopy->id);
+                $this->addBookCopy($bookCopy->id);
             }
         }
     }
 
     protected $rules = [
         'studentId' => 'required|exists:students,id',
-        'bookCopyId' => 'required|exists:book_copies,id',
+        'selectedBookCopies' => 'required|min:1',
         'loanType' => 'required|in:regular,semester,custom',
         'customDueDate' => 'required_if:loanType,custom|nullable|date|after_or_equal:today',
     ];
@@ -72,8 +73,8 @@ class LoanForm extends Component
     protected $messages = [
         'studentId.required' => 'Siswa harus dipilih',
         'studentId.exists' => 'Siswa tidak ditemukan',
-        'bookCopyId.required' => 'Buku harus dipilih',
-        'bookCopyId.exists' => 'Buku tidak ditemukan',
+        'selectedBookCopies.required' => 'Minimal satu buku harus dipilih',
+        'selectedBookCopies.min' => 'Minimal satu buku harus dipilih',
         'loanType.required' => 'Tipe peminjaman harus dipilih',
         'loanType.in' => 'Tipe peminjaman tidak valid',
         'customDueDate.required_if' => 'Tanggal jatuh tempo harus diisi untuk tipe custom',
@@ -98,7 +99,11 @@ class LoanForm extends Component
     {
         $this->studentId = $studentId;
         $this->selectedStudent = Student::with(['class', 'major', 'academicYear'])
-            ->withCount('activeLoans')
+            ->withCount(['activeLoans', 'activeLoans as non_textbook_loans_count' => function ($query) {
+                $query->whereHas('bookCopy.book', function ($q) {
+                    $q->where('is_textbook', false);
+                });
+            }])
             ->find($studentId);
         
         $this->closeStudentModal();
@@ -120,7 +125,7 @@ class LoanForm extends Component
         if ($this->selectedStudent) {
             $warnings = [];
 
-            // Check loan limit
+            // Check loan limit (initial check without new books)
             if (!$this->loanService->canStudentBorrow($this->selectedStudent)) {
                 $this->errorMessage = "Siswa telah mencapai batas maksimal peminjaman ({$this->selectedStudent->max_loan} buku)";
                 return;
@@ -151,8 +156,14 @@ class LoanForm extends Component
         $this->bookSearch = '';
     }
 
-    public function selectBookCopy(int $bookCopyId)
+    public function addBookCopy(int $bookCopyId)
     {
+        // Check if book is already in cart
+        if ($this->selectedBookCopies->contains('id', $bookCopyId)) {
+            $this->errorMessage = 'Buku ini sudah ada dalam daftar peminjaman';
+            return;
+        }
+
         $bookCopy = BookCopy::with('book')->find($bookCopyId);
         
         if (!$bookCopy) {
@@ -165,16 +176,27 @@ class LoanForm extends Component
             return;
         }
 
-        $this->bookCopyId = $bookCopyId;
-        $this->selectedBookCopy = $bookCopy;
+        // Add to collection
+        $this->selectedBookCopies->push($bookCopy);
+        
         $this->closeBookModal();
+        $this->clearMessages();
+        
+        // Reset barcode input for next scan
+        $this->barcodeInput = '';
+    }
+
+    public function removeBookCopy(int $bookCopyId)
+    {
+        $this->selectedBookCopies = $this->selectedBookCopies->reject(function ($book) use ($bookCopyId) {
+            return $book->id === $bookCopyId;
+        });
         $this->clearMessages();
     }
 
-    public function clearBookCopy()
+    public function clearBookCopies()
     {
-        $this->bookCopyId = null;
-        $this->selectedBookCopy = null;
+        $this->selectedBookCopies = collect();
         $this->clearMessages();
     }
 
@@ -199,11 +221,15 @@ class LoanForm extends Component
             $this->barcodeInput = '';
             return;
         }
+        
+        // Check duplication
+        if ($this->selectedBookCopies->contains('id', $bookCopy->id)) {
+            $this->errorMessage = "Buku dengan barcode {$barcode} sudah ada di daftar";
+            $this->barcodeInput = '';
+            return;
+        }
 
-        $this->bookCopyId = $bookCopy->id;
-        $this->selectedBookCopy = $bookCopy;
-        $this->barcodeInput = '';
-        $this->clearMessages();
+        $this->addBookCopy($bookCopy->id);
     }
 
     // Form submission
@@ -212,27 +238,57 @@ class LoanForm extends Component
         $this->clearMessages();
         $this->validate();
 
+        if ($this->selectedBookCopies->isEmpty()) {
+            $this->errorMessage = 'Pilih minimal satu buku untuk dipinjam';
+            return;
+        }
+
         try {
             $student = Student::findOrFail($this->studentId);
-            $bookCopy = BookCopy::findOrFail($this->bookCopyId);
+            
+            // Check quota for non-textbook books
+            $newNonTextbookCount = $this->selectedBookCopies->filter(fn($copy) => !$copy->book->is_textbook)->count();
+            $currentNonTextbookCount = $student->non_textbook_loans_count; // activeLoans count filtered by is_textbook=false
+            $maxLoan = $student->max_loan;
+
+            if (($currentNonTextbookCount + $newNonTextbookCount) > $maxLoan) {
+                $remaining = max(0, $maxLoan - $currentNonTextbookCount);
+                $this->errorMessage = "Kuota peminjaman tidak mencukupi. Sisa kuota: {$remaining}, akan meminjam: {$newNonTextbookCount} buku biasa.";
+                return;
+            }
 
             $dueDate = $this->loanType === 'custom' && $this->customDueDate
                 ? Carbon::parse($this->customDueDate)
                 : null;
 
-            $loan = $this->loanService->createLoan(
-                $student,
-                $bookCopy,
-                $this->loanType,
-                $dueDate
-            );
+            $borrowedTitles = [];
 
-            $this->successMessage = "Peminjaman berhasil! Buku '{$bookCopy->book->title}' dipinjam oleh {$student->name}. Jatuh tempo: {$loan->due_date->format('d/m/Y')}";
+            foreach ($this->selectedBookCopies as $bookCopy) {
+                // Re-verify availability
+                if (!$bookCopy->fresh()->isAvailable()) {
+                    throw new \Exception("Buku '{$bookCopy->book->title}' baru saja dipinjam orang lain.");
+                }
+
+                $this->loanService->createLoan(
+                    $student,
+                    $bookCopy,
+                    $this->loanType,
+                    $dueDate
+                );
+                
+                $borrowedTitles[] = $bookCopy->book->title;
+            }
+
+            $count = count($borrowedTitles);
+            $titlesStr = implode(', ', array_slice($borrowedTitles, 0, 2));
+            if ($count > 2) $titlesStr .= " dan " . ($count - 2) . " lainnya";
+
+            $this->successMessage = "Peminjaman berhasil! {$count} buku ({$titlesStr}) dipinjam oleh {$student->name}.";
 
             // Full Reset for new transaction
             $this->resetForm();
-            // But preserve the success message
-            $this->successMessage = "Peminjaman berhasil! Buku '{$bookCopy->book->title}' dipinjam oleh {$student->name}. Jatuh tempo: {$loan->due_date->format('d/m/Y')}";
+            // Preserve success message
+            $this->successMessage = "Peminjaman berhasil! {$count} buku ({$titlesStr}) dipinjam oleh {$student->name}.";
 
         } catch (\InvalidArgumentException $e) {
             $this->errorMessage = $e->getMessage();
@@ -243,14 +299,17 @@ class LoanForm extends Component
 
     protected function resetBookSelection()
     {
-        $this->bookCopyId = null;
-        $this->selectedBookCopy = null;
+        $this->selectedBookCopies = collect();
         $this->barcodeInput = '';
         
         // Refresh student data to update loan count
         if ($this->studentId) {
             $this->selectedStudent = Student::with(['class', 'major', 'academicYear'])
-                ->withCount('activeLoans')
+                ->withCount(['activeLoans', 'activeLoans as non_textbook_loans_count' => function ($query) {
+                    $query->whereHas('bookCopy.book', function ($q) {
+                        $q->where('is_textbook', false);
+                    });
+                }])
                 ->find($this->studentId);
             $this->checkStudentWarnings();
         }
@@ -260,10 +319,11 @@ class LoanForm extends Component
     {
         $this->reset([
             'studentId', 'selectedStudent', 'studentSearch',
-            'bookCopyId', 'selectedBookCopy', 'bookSearch', 'barcodeInput',
+            'bookSearch', 'barcodeInput',
             'loanType', 'customDueDate',
             'successMessage', 'errorMessage', 'warningMessage'
         ]);
+        $this->selectedBookCopies = collect();
     }
 
     protected function clearMessages()
@@ -286,7 +346,11 @@ class LoanForm extends Component
                 $query->where('nis', 'like', '%' . $this->studentSearch . '%')
                     ->orWhere('name', 'like', '%' . $this->studentSearch . '%');
             })
-            ->withCount('activeLoans')
+            ->withCount(['activeLoans', 'activeLoans as non_textbook_loans_count' => function ($query) {
+                $query->whereHas('bookCopy.book', function ($q) {
+                    $q->where('is_textbook', false);
+                });
+            }])
             ->limit(10)
             ->get();
     }
