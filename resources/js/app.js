@@ -1,4 +1,7 @@
 import './bootstrap';
+import Chart from 'chart.js/auto';
+
+window.Chart = Chart;
 
 document.addEventListener('alpine:init', () => {
     Alpine.store('sidebar', {
@@ -29,4 +32,3 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 });
-

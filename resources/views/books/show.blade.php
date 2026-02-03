@@ -217,8 +217,31 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-3 text-right">
-                                                <!-- Contextual actions for specific copies could go here -->
-                                                <span class="text-slate-400">-</span>
+                                                @if($copy->status !== 'borrowed')
+                                                    <div x-data="{ open: false }" class="relative inline-block text-left">
+                                                        <button @click="open = !open" @click.away="open = false" type="button" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                                            Ubah Status
+                                                        </button>
+
+                                                        <div x-show="open" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" style="display: none;">
+                                                            <div class="py-1">
+                                                                @foreach(['available' => 'Tersedia', 'lost' => 'Hilang', 'damaged' => 'Rusak', 'repair' => 'Perbaikan'] as $status => $label)
+                                                                    @if($copy->status !== $status)
+                                                                        <form action="{{ route('book-copies.update', $copy) }}" method="POST">
+                                                                            @csrf
+                                                                            @method('PUT')
+                                                                            <button type="submit" name="status" value="{{ $status }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                                                {{ $label }}
+                                                                            </button>
+                                                                        </form>
+                                                                    @endif
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-slate-400 text-xs italic">Sedang Dipinjam</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

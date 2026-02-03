@@ -38,6 +38,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Backup Route
+    Route::get('/backup/download', [App\Http\Controllers\BackupController::class, 'download'])->name('backup.download');
+
     // Master Data Routes
     Route::prefix('master')->name('master.')->group(function () {
         // Academic Years
@@ -86,6 +89,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/books-barcode', fn() => view('books.barcode'))->name('books.barcode');
     Route::get('/books/sub-classifications/{classification}', [BookController::class, 'getSubClassifications'])
         ->name('books.sub-classifications');
+
+    // Book Copy Route
+    Route::put('/book-copies/{bookCopy}', [App\Http\Controllers\Book\BookCopyController::class, 'update'])->name('book-copies.update');
 
     // Transaction Routes
     Route::prefix('transactions')->name('transactions.')->group(function () {
