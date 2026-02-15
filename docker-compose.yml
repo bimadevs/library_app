@@ -1,0 +1,153 @@
+##############################################
+# School Library - Docker Compose Configuration
+##############################################
+
+services:
+  # ==========================================
+  # PHP Application (Laravel)
+  # ==========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: library-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - app_public:/var/www/html/public
+      - app_storage:/var/www/html/storage/app
+      - app_logs:/var/www/html/storage/logs
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env.docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - library_network
+
+  # ==========================================
+  # Nginx Web Server
+  # ==========================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: library-nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-80}:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - app_public:/var/www/html/public:ro
+    depends_on:
+      - app
+    networks:
+      - library_network
+
+  # ==========================================
+  # MySQL Database
+  # ==========================================
+  mysql:
+    image: mysql:8.0
+    container_name: library-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-school_library}
+      MYSQL_USER: ${DB_USERNAME:-library_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+    ports:
+      - "${DB_EXTERNAL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
+      --max-connections=200
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootsecret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - library_network
+
+  # ==========================================
+  # Redis (Cache & Queue)
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: library-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - library_network
+
+  # ==========================================
+  # Queue Worker (untuk background jobs)
+  # ==========================================
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: library-queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    entrypoint: []
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
+    volumes:
+      - app_storage:/var/www/html/storage/app
+      - app_logs:/var/www/html/storage/logs
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env.docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - library_network
+
+# ==========================================
+# Volumes
+# ==========================================
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_public:
+    driver: local
+  app_storage:
+    driver: local
+  app_logs:
+    driver: local
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  library_network:
+    driver: bridge

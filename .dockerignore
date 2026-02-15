@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Dependencies (will be installed in Docker)
+node_modules
+vendor
+
+# IDE / Editor
+.idea
+.vscode
+.fleet
+.nova
+.zed
+.phpactor.json
+
+# Environment (use .env.docker instead)
+.env
+.env.backup
+.env.production
+
+# Logs
+*.log
+storage/logs/*
+
+# Testing
+tests
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Misc
+*.md
+.editorconfig
+.kiro
+.sisyphus
+.server_status
+initial_page.html
+cookies.txt
+book_id.txt
+test.md
+seed_book.php
+seed_test_data.php
