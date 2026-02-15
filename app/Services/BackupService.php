@@ -52,7 +52,10 @@ class BackupService
         fwrite($file, "-- --------------------------------------------------------\n\n");
 
         // Get all tables
-        $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+        $tables = DB::select('SHOW TABLES');
+        $tables = array_map(function ($table) {
+            return reset($table);
+        }, $tables);
 
         // Disable foreign key checks
         fwrite($file, "SET FOREIGN_KEY_CHECKS=0;\n\n");
