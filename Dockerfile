@@ -1,9 +1,25 @@
 # ============================================
 # Stage 1: Composer - Install PHP Dependencies
 # ============================================
-FROM composer:2 AS composer
+FROM php:8.2-cli-alpine AS composer
 
 WORKDIR /app
+
+# Install composer dependencies
+RUN apk add --no-cache \
+    zip \
+    unzip \
+    git \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
+
+# Install PHP extensions required for composer install scripts
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd zip
+
+# Get latest Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
 
@@ -12,8 +28,7 @@ RUN composer install \
     --no-scripts \
     --no-autoloader \
     --prefer-dist \
-    --no-interaction \
-    --ignore-platform-req=ext-gd
+    --no-interaction
 
 COPY . .
 
