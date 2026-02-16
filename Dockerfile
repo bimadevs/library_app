@@ -12,7 +12,8 @@ RUN apk add --no-cache \
     git \
     libpng-dev \
     libjpeg-turbo-dev \
-    freetype-dev
+    freetype-dev \
+    libzip-dev
 
 # Install PHP extensions required for composer install scripts
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
