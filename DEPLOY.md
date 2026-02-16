@@ -87,8 +87,13 @@ Kita akan menggunakan **bind mounts** agar data tersimpan di folder project, buk
 mkdir -p docker-data/mysql
 mkdir -p docker-data/redis
 
-# Pastikan folder storage memiliki permission yang benar (User ID 1000)
+# Pastikan permission folder benar
+# Storage & Bootstrap (User ID 1000 untuk App)
 sudo chown -R 1000:1000 storage bootstrap/cache
+
+# MySQL (User ID 999 untuk Database)
+sudo chown -R 999:999 docker-data/mysql
+
 sudo chmod -R 775 storage bootstrap/cache
 ```
 
