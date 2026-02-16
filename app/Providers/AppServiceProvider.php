@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
 
                 View::share('librarySetting', $setting);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Do nothing if database connection fails (e.g. during build)
         }
     }

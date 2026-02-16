@@ -24,6 +24,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
 
+# Prevent DB connection during build
+ENV DB_CONNECTION=mysql
+
 RUN composer install \
     --no-dev \
     --no-scripts \
