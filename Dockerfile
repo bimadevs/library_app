@@ -75,6 +75,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 RUN addgroup -g 1000 -S www \
     && adduser -u 1000 -S www -G www
 
+# Configure PHP-FPM to run as www
+RUN sed -i 's/user = www-data/user = www/g' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/group = www-data/group = www/g' /usr/local/etc/php-fpm.d/www.conf
+
 # Set working directory
 WORKDIR /var/www/html
 
