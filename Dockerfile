@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Composer - Install PHP Dependencies
 # ============================================
-FROM php:8.2-cli-alpine AS composer
+FROM php:8.3-cli-alpine AS composer
 
 WORKDIR /app
 
@@ -51,9 +51,9 @@ COPY . .
 RUN npm run build
 
 # ============================================
-# Stage 3: Production - PHP 8.2 FPM
+# Stage 3: Production - PHP 8.3 FPM
 # ============================================
-FROM php:8.2-fpm-alpine AS production
+FROM php:8.3-fpm-alpine AS production
 
 LABEL maintainer="BimaDevs"
 LABEL description="School Library Management System"
